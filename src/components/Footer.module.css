@@ -1,0 +1,56 @@
+/* src/components/Footer.module.css */
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%; /* Opcional: podrías querer max-width en escritorio */
+    max-width: 480px; /* Ejemplo: Limitar ancho en pantallas grandes si es diseño mobile-first */
+    margin: 0 auto; /* Centrar si se usa max-width */
+    right: 0; /* Necesario con max-width y margin auto para centrar fixed */
+    height: 60px;
+    background-color: #7cd6a7;
+    z-index: 1000; /* Un z-index alto es bueno, 9999 es quizás excesivo */
+    display: flex;
+    justify-content: space-around; /* Distribuye el espacio uniformemente */
+    align-items: center; /* Centra verticalmente los íconos */
+    padding: 0 10px; /* Añade un poco de espacio en los bordes */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Sombra opcional para separar visualmente */
+  }
+  
+  .iconButton {
+    background: none;
+    border: none;
+    padding: 5px; /* Área clickeable un poco más grande */
+    margin: 0;
+    cursor: pointer;
+    display: flex; /* Para alinear el ícono dentro si fuera necesario */
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; /* Opcional: para efecto hover/focus */
+    transition: background-color 0.2s ease; /* Transición suave */
+  }
+  
+  .iconButton:hover,
+  .iconButton:focus {
+    background-color: rgba(255, 255, 255, 0.2); /* Feedback visual */
+    outline: none; /* Quita el outline por defecto si se desea (cuidado con accesibilidad) */
+  }
+  /* Se podría añadir un :focus-visible para mejor accesibilidad de teclado */
+  .iconButton:focus-visible {
+      outline: 2px solid rgba(255, 255, 247, 0.7); /* Outline visible solo con teclado */
+      outline-offset: 2px;
+  }
+  
+  
+  .icon {
+    width: 27px; /* Tamaño base, ajusta según necesites */
+    height: 27px; /* Hacerlos cuadrados para consistencia */
+    fill: #fff7f7;
+    display: block; /* Evita espacio extra debajo del SVG */
+  }
+  
+  /* Ajustes específicos si un ícono necesita un tamaño distinto */
+  /* .icon.historial { width: 24px; height: 24px; } */
+  /* .icon.config { width: 24px; height: 24px; } */
+  /* Nota: Es mejor intentar usar el mismo tamaño para todos para simplicidad */

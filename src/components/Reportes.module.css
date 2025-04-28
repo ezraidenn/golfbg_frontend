@@ -1,0 +1,193 @@
+/* src/screens/Reportes.module.css */
+
+.wrapper {
+    max-width: 900px; /* Ancho máximo para el contenido */
+    margin: 20px auto; /* Centrado y margen superior/inferior */
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa; /* Fondo ligero */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 0; /* Quitar margen superior por defecto del h2 */
+    margin-bottom: 24px;
+    text-align: center;
+    color: #343a40; /* Gris oscuro */
+  }
+  
+  .controlsContainer {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  
+  .controlRow {
+    display: flex;
+    flex-wrap: wrap; /* Permitir que los elementos bajen */
+    align-items: flex-end; /* Alinear botones con la base de los inputs */
+    gap: 15px; /* Espacio entre elementos de la fila */
+    margin-bottom: 16px;
+  }
+  .controlRow:last-child {
+      margin-bottom: 0;
+  }
+  
+  .controlGroup {
+      display: flex;
+      flex-direction: column;
+      gap: 5px; /* Espacio entre label e input */
+      flex: 1 1 180px; /* Permitir crecer/encoger, base */
+  }
+  
+  .label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+  }
+  
+  .select,
+  .filterInput {
+    width: 100%;
+    height: 40px; /* Altura consistente */
+    padding: 0 10px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    background-color: #ffffff;
+    font-size: 14px;
+    box-sizing: border-box; /* Importante para padding */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  .select:focus,
+  .filterInput:focus {
+      border-color: #80bdff;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+  .filterInput::placeholder {
+      color: #adb5bd;
+  }
+  
+  .filterRow {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .filterRow .controlGroup { /* Aplicar estilo de grupo a los filtros */
+    flex: 1 1 180px; /* Mismo estilo que controlGroup */
+  }
+  
+  .actionButtons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .button {
+    padding: 10px 20px; /* Más padding */
+    background-color: #007bff; /* Azul primario */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    height: 40px; /* Misma altura que inputs */
+    white-space: nowrap;
+  }
+  .button:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  .button:disabled {
+    background-color: #6c757d; /* Gris */
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  .exportButton {
+      background-color: #17a2b8; /* Cyan info */
+      margin-left: 5px; /* Pequeño espacio */
+  }
+  .exportButton:hover:not(:disabled) {
+      background-color: #117a8b;
+  }
+  
+  
+  .resultsContainer {
+    margin-top: 24px;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    min-height: 150px; /* Espacio mínimo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  .tableContainer {
+    width: 100%;
+    overflow-x: auto; /* Scroll horizontal */
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  
+  .table th,
+  .table td {
+    padding: 10px 12px;
+    border: 1px solid #dee2e6; /* Borde tabla bootstrap */
+    text-align: left;
+    vertical-align: middle; /* Centrar verticalmente */
+  }
+  
+  .table th {
+    background-color: #e9ecef; /* Gris claro bootstrap */
+    font-weight: 600;
+    color: #495057; /* Gris oscuro bootstrap */
+    white-space: nowrap;
+  }
+  .table tbody tr:nth-child(even) {
+      background-color: #f8f9fa; /* Rayado ligero bootstrap */
+  }
+  .table tbody tr:hover {
+      background-color: #e2e8f0; /* Resaltar fila */
+  }
+  .table tfoot td {
+      font-weight: bold;
+      background-color: #e9ecef;
+  }
+  
+  /* Mensajes */
+  .loading,
+  .infoText {
+    text-align: center;
+    color: #555;
+    padding: 30px;
+    font-size: 16px;
+  }
+  .error {
+    color: #b91c1c; /* Rojo oscuro */
+    background-color: #fef2f2; /* Rojo muy pálido */
+    border: 1px solid #fecaca; /* Borde rojo pálido */
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-weight: 500;
+    text-align: center;
+    width: 100%; /* Ocupar ancho del contenedor */
+    box-sizing: border-box;
+  }

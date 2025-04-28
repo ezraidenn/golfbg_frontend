@@ -1,0 +1,288 @@
+/* src/components/EditarAlmacen.module.css */
+
+.wrapper {
+    margin: 0 auto;
+    padding: 0; /* Sin padding exterior */
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+.scrollableContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 16px;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #333;
+    text-align: center;
+}
+
+.label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.input {
+    width: 100%;
+    height: 40px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    padding: 0 10px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+.input:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.structureTitle {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.structureContainer {
+    margin-top: 10px;
+}
+
+.noSublevels {
+    color: #888;
+    font-style: italic;
+    font-size: 14px;
+    text-align: center;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+/* --- ESTILOS NIVEL MODIFICADOS --- */
+.nivelWrapper {
+    border: 1px solid #e0e0e0;
+    /* Borde izquierdo para jerarquía visual */
+    border-left-width: 3px;
+    border-left-style: solid;
+    margin-bottom: 10px;
+    /* Padding izquierdo incremental se aplica en línea */
+    padding: 10px;
+    border-radius: 0 4px 4px 0; /* Redondeo solo derecha */
+    background-color: #fff;
+    transition: background-color 0.2s ease;
+}
+.nivelWrapper:hover {
+    background-color: #fdfdfd;
+}
+/* Colores de borde por nivel */
+.nivelWrapper[data-indent='1'] { border-left-color: #007bff; } /* Azul */
+.nivelWrapper[data-indent='2'] { border-left-color: #ffc107; } /* Amarillo */
+.nivelWrapper[data-indent='3'] { border-left-color: #28a745; } /* Verde */
+.nivelWrapper[data-indent='4'] { border-left-color: #17a2b8; } /* Cyan */
+/* Añadir más colores si se anticipan más niveles */
+.nivelWrapper[data-indent='5'] { border-left-color: #fd7e14; } /* Naranja */
+.nivelWrapper[data-indent='6'] { border-left-color: #6f42c1; } /* Púrpura */
+
+.nivelContent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nivelInput {
+    flex-grow: 1;
+    font-weight: 600;
+    border: none;
+    border-bottom: 1px dashed #ccc;
+    background: transparent;
+    padding: 6px 4px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    min-width: 50px;
+}
+.nivelInput:focus {
+    border-bottom: 1px solid #007bff;
+}
+.nivelInput:disabled {
+    border-bottom-color: transparent;
+    background-color: transparent;
+    cursor: default;
+    color: #555;
+}
+
+/* Estilo base para botones de icono +/- */
+.nivelIconButton {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    color: #333;
+    border-radius: 4px; /* Cuadrado redondeado */
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease-in-out;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+}
+.nivelIconButton:hover:not(:disabled) {
+    background-color: #e0e0e0;
+    border-color: #bbb;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    transform: translateY(-1px); /* Efecto sutil */
+}
+.nivelIconButton:active:not(:disabled) {
+    background-color: #d5d5d5;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    transform: translateY(0px);
+}
+.nivelIconButton.add { border-color: #1e7e34; background-color: #d4edda; }
+.nivelIconButton.add svg { fill: #155724; }
+.nivelIconButton.add:hover:not(:disabled) { background-color: #c3e6cb; }
+
+.nivelIconButton.remove { border-color: #bd2130; background-color: #f8d7da;}
+.nivelIconButton.remove svg { fill: #721c24; }
+.nivelIconButton.remove:hover:not(:disabled) { background-color: #f5c6cb; }
+
+.nivelIconButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.nivelIconButton svg {
+    width: 14px; /* Tamaño icono */
+    height: 14px;
+    display: block;
+}
+/* --- FIN ESTILOS NIVEL MODIFICADOS --- */
+
+/* Botón Añadir Nivel Principal */
+.btnAddRoot {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: block;
+    margin: 15px auto 0 auto;
+    transition: background-color 0.2s ease;
+}
+.btnAddRoot:hover:not(:disabled) { background-color: #0056b3; }
+.btnAddRoot:disabled { opacity: 0.6; cursor: not-allowed; }
+
+
+/* Footer Fijo */
+.footer {
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-between; /* Separa botones */
+    align-items: center;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    box-shadow: 0px -2px 5px rgba(0,0,0,0.08);
+    border-top: 1px solid #eee;
+}
+
+.footerButton {
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 16px; /* Padding base */
+    border-radius: 4px; /* Redondeo */
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+.footerButton.cancel {
+    color: #6c757d; /* Gris */
+    background-color: transparent;
+}
+.footerButton.cancel:hover:not(:disabled) {
+    background-color: #f1f1f1; /* Fondo ligero al pasar */
+}
+.footerButton.save {
+    background-color: #28a745; /* Verde Bootstrap success */
+    color: #ffffff;
+}
+.footerButton.save:hover:not(:disabled) {
+    background-color: #218838; /* Verde más oscuro */
+}
+.footerButton:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+.footerButton.save:disabled {
+    background-color: #a0d8b8; /* Verde pálido */
+}
+
+
+/* Modal Confirmación (Estilo mejorado) */
+.confirmOverlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: rgba(0,0,0,0.6); display: flex;
+    justify-content: center; align-items: center; z-index: 1001;
+}
+.confirmModal {
+    background-color: #fff; padding: 24px; border-radius: 8px;
+    max-width: 320px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border-top: 5px solid #dc3545; /* Borde rojo más grueso */
+}
+.confirmMessage { margin-bottom: 20px; color: #333; font-size: 16px; line-height: 1.5; }
+.confirmButtonRow { display: flex; justify-content: space-evenly; gap: 15px; } /* Más espacio */
+.confirmButton {
+    padding: 10px 24px; border: none; border-radius: 4px;
+    font-weight: 600; cursor: pointer; font-size: 14px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.confirmButton.yes { background-color: #dc3545; color: #fff; }
+.confirmButton.yes:hover { background-color: #c82333; }
+.confirmButton.no { background-color: #6c757d; color: #fff; }
+.confirmButton.no:hover { background-color: #5a6268; }
+.confirmButton:active { transform: scale(0.98); } /* Efecto click */
+
+/* Feedback Message (similar al de ShelfToSheet) */
+.feedbackMessage {
+    padding: 10px 15px;
+    margin: 16px 0;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+}
+.feedbackMessage.success {
+    background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
+}
+.feedbackMessage.error {
+    background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+}
+.feedbackMessage.info {
+    background-color: #cce5ff; color: #004085; border: 1px solid #b8daff;
+}

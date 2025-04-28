@@ -1,0 +1,247 @@
+/* src/components/ShelfToSheet.module.css */
+
+.wrapper {
+    margin: 16px auto;
+    padding: 16px;
+    width: 100%;
+    max-width: 480px; /* Ajustado para móvil */
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    gap: 16px; /* Espacio entre tarjetas y botones */
+}
+
+.loadingIndicator,
+.errorIndicator,
+.noAlmacenes {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-sizing: border-box;
+}
+
+.loadingIndicator {
+    color: #007bff;
+}
+
+.errorIndicator {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.noAlmacenes {
+    color: #6c757d;
+    background-color: #e9ecef;
+}
+
+.card {
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 16px;
+    box-sizing: border-box; /* Asegura padding dentro del width */
+}
+
+.topRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px; /* Espacio antes de los botones */
+}
+
+.image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* Circular */
+    object-fit: cover;
+    flex-shrink: 0; /* Evita que se encoja */
+}
+
+.infoColumn {
+    flex-grow: 1; /* Ocupa espacio disponible */
+    min-width: 0; /* Permite encogerse si es necesario */
+}
+
+.title {
+    color: #030303;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.4; /* Ajustado */
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Manejar nombres largos */
+}
+
+.subtitle {
+    color: #555; /* Color más suave */
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.buttonsRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap; /* Permitir que bajen en pantallas pequeñas */
+}
+
+.button { /* Estilo base para botones */
+    height: 36px;
+    border: none;
+    border-radius: 4px; /* Ligeramente redondeado */
+    font-size: 14px;
+    font-weight: 600; /* Semi-bold */
+    cursor: pointer;
+    padding: 0 12px; /* Padding horizontal */
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    font-family: 'Poppins', sans-serif;
+    display: inline-flex; /* Para alinear texto/iconos si los hubiera */
+    align-items: center;
+    justify-content: center;
+}
+.button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btnGreen {
+    background-color: #16c76c;
+    color: #ffffff;
+    flex: 1 1 auto; /* Permite crecer y encoger */
+    min-width: 100px; /* Ancho mínimo */
+}
+.btnGreen:hover:not(:disabled) { background-color: #13a85a; }
+
+.btnLightGreen { /* Para editar */
+    background-color: #20c997; /* Un verde azulado */
+    color: #ffffff;
+    min-width: 70px; /* Ancho fijo */
+    flex-grow: 0;
+}
+.btnLightGreen:hover:not(:disabled) { background-color: #1aa87f; }
+
+
+.btnRed {
+    background-color: #dc3545; /* Rojo más estándar */
+    color: #ffffff;
+    min-width: 70px; /* Ancho fijo */
+    flex-grow: 0;
+}
+.btnRed:hover:not(:disabled) { background-color: #c82333; }
+
+
+.btnFullWidth { /* Para Nuevo y Exportar */
+    width: 100%;
+    height: 42px; /* Más alto */
+    font-size: 16px;
+    background-color: #007bff; /* Azul primario */
+    color: #ffffff;
+}
+.btnFullWidth.green {
+    background-color: #16c76c;
+}
+.btnFullWidth:hover:not(:disabled) { opacity: 0.9; }
+
+/* Modal */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.6); /* Más oscuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Encima de todo */
+}
+
+.modal {
+    background-color: #fff;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 360px; /* Ligeramente más ancho */
+    padding: 20px; /* Más padding */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.modalTitle {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px; /* Más espacio */
+    text-align: center;
+    color: #333;
+}
+
+.modalLabel {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px; /* Más espacio */
+    display: block;
+    color: #333;
+}
+
+.modalInput {
+    width: 100%;
+    height: 40px; /* Más alto */
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    padding: 0 10px; /* Padding horizontal */
+    font-size: 14px;
+    margin-bottom: 16px; /* Más espacio */
+    box-sizing: border-box; /* Importante */
+}
+
+.modalButtonRow {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px; /* Espacio entre botones */
+    margin-top: 16px;
+}
+
+.modalButton {
+    flex: 1; /* Ocupan espacio equitativo */
+    height: 40px;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: 600; /* Semi-bold */
+    cursor: pointer;
+    font-size: 14px;
+}
+.modalButton.confirm { background-color: #28a745; } /* Verde Confirmar */
+.modalButton.confirm:hover { background-color: #218838; }
+.modalButton.cancel { background-color: #dc3545; } /* Rojo Cancelar */
+.modalButton.cancel:hover { background-color: #c82333; }
+
+/* Estilo para mensajes de feedback */
+.feedbackMessage {
+    padding: 10px 15px;
+    margin: 16px 0;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+}
+.feedbackMessage.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.feedbackMessage.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}

@@ -1,0 +1,206 @@
+/* src/components/Header.module.css */
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    height: 60px;
+    background-color: #7cd6a7;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* Modificación: Aumentar padding derecho */
+    padding: 0 20px 0 16px; /* Antes: 0 16px. Damos más espacio a la derecha */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    color: #ffffff;
+    box-sizing: border-box; /* Asegura que el padding esté incluido en el width */
+  }
+
+  /* Contenedores para las secciones izquierda, centro, derecha */
+  .leftSection,
+  .rightSection {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .centerSection {
+    flex: 1 1 auto;
+    text-align: center;
+    overflow: hidden;
+    padding: 0 8px; /* Mantenemos un padding mínimo para el título */
+  }
+
+
+  .title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 60px;
+  }
+
+  /* Estilo base para botones de icono */
+  .iconButton {
+    background: none;
+    border: none;
+    /* Modificación: Reducir padding del botón */
+    padding: 6px; /* Antes: 8px */
+    margin: 0;
+    cursor: pointer;
+    color: #ffffff;
+    fill: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    position: relative; /* Añadido para que el badge se posicione relativo a él si es necesario */
+  }
+
+  .iconButton:hover,
+  .iconButton:focus {
+    background-color: rgba(255, 255, 255, 0.2);
+    outline: none;
+  }
+  .iconButton:focus-visible {
+      outline: 2px solid rgba(255, 255, 247, 0.7);
+      outline-offset: 1px;
+  }
+
+  .icon {
+    /* Modificación: Reducir tamaño del icono */
+    width: 18px; /* Antes: 20px */
+    height: 18px; /* Antes: 20px */
+    display: block;
+  }
+
+  .backArrow {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  /* Contenedor de los botones de la derecha */
+  .notificationContainer {
+      position: relative;
+      display: flex;
+      align-items: center;
+  }
+
+  /* Espaciado entre botones DENTRO del contenedor */
+  /* Usar selector adyacente general para mayor flexibilidad si cambian los elementos */
+  .notificationContainer > * + * {
+    margin-left: 6px; /* Antes: 8px */
+  }
+
+
+  /* --- NUEVOS ESTILOS PARA NOTIFICACIONES --- */
+
+  /* Badge para notificaciones no leídas */
+  .notificationBadge {
+      position: absolute;
+      top: 0px;      /* Ajustar posición vertical fina */
+      right: 0px;     /* Ajustar posición horizontal fina */
+      background-color: #ff2d55; /* Rojo */
+      color: white;
+      border-radius: 50%; /* Círculo */
+      padding: 1px 5px;   /* Espaciado interno */
+      font-size: 10px;    /* Tamaño pequeño */
+      font-weight: bold;
+      line-height: 1;     /* Ajuste vertical */
+      min-width: 16px;    /* Ancho mínimo */
+      height: 16px;       /* Altura */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      pointer-events: none; /* Para que no interfiera con el click */
+      transform: translate(30%, -30%); /* Ajustar para que quede en esquina superior derecha */
+  }
+
+  /* Lista de notificaciones dentro del popup */
+  .notificationList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 300px; /* Limitar altura y permitir scroll */
+      overflow-y: auto;
+  }
+
+  /* Cada item de notificación */
+  .notificationItem {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      cursor: pointer; /* Indicar que es clickeable (si tiene acción) */
+      transition: background-color 0.2s ease;
+  }
+  .notificationItem:last-child {
+      border-bottom: none; /* Quitar borde del último */
+  }
+  .notificationItem:hover {
+      background-color: #f8f9fa; /* Ligero fondo al pasar el mouse */
+  }
+
+  /* Mensaje dentro del item */
+  .notificationMessage {
+      margin: 0 0 4px 0; /* Margen inferior */
+      font-size: 0.9rem;
+      color: #333;
+      line-height: 1.4;
+  }
+
+  /* Timestamp opcional */
+  .notificationTime {
+      display: block;
+      font-size: 0.75rem;
+      color: #888;
+      text-align: right;
+  }
+
+  /* Mensajes genéricos dentro del popup (Loading, Error, No hay...) */
+  .popupMessage {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #6c757d; /* Gris */
+      text-align: center;
+      padding: 10px 0;
+  }
+
+  .popupError {
+      color: #dc3545; /* Rojo */
+      font-weight: bold;
+  }
+  /* --- FIN NUEVOS ESTILOS --- */
+
+
+  /* Popup de notificaciones (Estilo base sin cambios) */
+  .notificationPopup {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 250px;
+    background-color: #ffffff;
+    color: #333;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    padding: 16px;
+    z-index: 1001;
+    text-align: left;
+  }
+
+  /* El estilo original .notificationPopup p puede eliminarse si se usa .popupMessage o .notificationMessage */
+  /* .notificationPopup p {
+      margin: 0;
+      font-size: 0.9rem;
+  } */

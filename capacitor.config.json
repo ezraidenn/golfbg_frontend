@@ -1,0 +1,6 @@
+{
+  "appId": "com.countryclub.inventariogolf",
+  "appName": "InventarioGolf",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
