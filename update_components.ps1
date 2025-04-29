@@ -15,7 +15,7 @@ $components = @(
 
 foreach ($component in $components) {
     $content = Get-Content $component -Raw
-    $newContent = $content -replace "const BASE_URL = `"http://10\.0\.0\.49:8000`".*`n", "import { API_URL } from '../config'`n`nconst BASE_URL = API_URL;`n"
+    $newContent = $content -replace "const BASE_URL = `"http://10\.0\.0\.49:7734`".*`n", "import { API_URL } from '../config'`n`nconst BASE_URL = API_URL;`n"
     $newContent | Set-Content $component -NoNewline
     Write-Host "Updated $component"
 }

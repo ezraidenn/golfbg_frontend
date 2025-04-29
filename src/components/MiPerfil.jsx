@@ -71,6 +71,28 @@ export default function MiPerfil() {
     const fileInputRef = useRef(null);
     const currentPreviewUrl = useRef(null);
 
+    // Función para procesar URLs de imágenes y evitar duplicación
+    const getImageUrl = (url) => {
+        if (!url || url === DEFAULT_IMAGE) return DEFAULT_IMAGE;
+        
+        // Si la URL ya tiene el formato correcto, devolverla tal cual
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            // Verificar si la URL ya tiene el formato correcto (sin duplicación)
+            const baseUrl = 'http://10.0.0.49:7734/static/';
+            if (url.includes('/static/http://')) {
+                // Corregir URL duplicada
+                return url.replace('/static/http://', '/static/');
+            } else if (url.includes(':8000/')) {
+                // Corregir puerto incorrecto
+                return url.replace(':8000/', ':7734/');
+            }
+            return url;
+        }
+        
+        // Si es una ruta relativa, convertirla a absoluta
+        return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+    };
+
     // Función para formatear fecha de último login
     const formatLastLogin = (dateString) => {
         if (!dateString) return "Nunca";
@@ -87,12 +109,17 @@ export default function MiPerfil() {
         setLoadingProfile(true); setErrorProfile(""); setSuccessMessage("");
         try {
             const data = await fetchUserProfileAPI(token);
+            
+            // Corregir URL de imagen si tiene el puerto incorrecto
+            let imageUrl = data.profile_image || DEFAULT_IMAGE;
+            imageUrl = getImageUrl(imageUrl);
+            
             setUserProfile({
                 name: data.name || data.username || "Sin Nombre",
                 email: data.email || "Sin Email",
                 role: data.rol || "Sin Rol",
                 lastLogin: formatLastLogin(data.last_login),
-                image: data.profile_image || DEFAULT_IMAGE,
+                image: imageUrl,
             });
         } catch (error) {
             console.error("Error loading profile:", error);
@@ -139,7 +166,9 @@ export default function MiPerfil() {
         try {
             const data = await uploadProfileImageAPI(token, file);
             if (data.profile_image) {
-                setUserProfile(prev => ({ ...prev, image: data.profile_image }));
+                // Usar getImageUrl para asegurar la URL correcta
+                const imageUrl = getImageUrl(data.profile_image);
+                setUserProfile(prev => ({ ...prev, image: imageUrl }));
                 setSuccessMessage("Imagen actualizada.");
                 URL.revokeObjectURL(previewUrl);
                 currentPreviewUrl.current = null;

@@ -1,0 +1,143 @@
+/* src/components/Alerta.module.css */
+
+.container {
+  margin: 0 auto;
+  max-width: 420px;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 16px;
+  padding-bottom: 80px;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+.emptyState {
+  text-align: center;
+  color: #666;
+  margin-top: 32px;
+  font-size: 16px;
+}
+
+.loadingState {
+  text-align: center;
+  color: #666;
+  margin-top: 32px;
+  font-size: 16px;
+}
+
+.errorState {
+  text-align: center;
+  color: #dc2626;
+  margin-top: 32px;
+  font-size: 16px;
+}
+
+/* Estilos para la tarjeta */
+.card {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #E5E7EB;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Estilos para el encabezado de la tarjeta */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1F2937;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+
+/* Estilos para la información de la tarjeta */
+.info {
+  margin-bottom: 12px;
+}
+
+.retraso {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.fechaDevolucion {
+  font-size: 14px;
+  color: #6B7280;
+  margin-top: 4px;
+}
+
+/* Estilos para el botón */
+.button {
+  padding: 8px 16px;
+  background-color: #3B82F6;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.button:hover {
+  background-color: #2563EB;
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.buttonSending {
+  background-color: #A0AEC0;
+}
+
+.buttonSent {
+  background-color: #68D391;
+}
+
+.buttonError {
+  background-color: #FC8181;
+}
+
+/* Estilos para la tarjeta resaltada */
+.highlightedCard {
+  border: 2px solid #f87171;
+  background-color: #fee2e2;
+}
+
+/* Animación de pulso para resaltar la tarjeta */
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}

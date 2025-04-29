@@ -1,0 +1,43 @@
+# Dependencias
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Sistema de control de versiones
+.git
+.gitignore
+
+# Archivos de construcción
+dist
+build
+coverage
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Archivos de capacitor/android
+android/
+capacitor.config.json
+
+# Archivos de certificados
+server.crt
+server.key
+
+# Otros archivos innecesarios
+*.xlsx
+update_components.ps1

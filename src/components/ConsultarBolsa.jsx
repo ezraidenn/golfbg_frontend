@@ -140,7 +140,7 @@ function BolsaDetailsCard({ bolsa, memberInfo, memberErrorMsg, loadingMember, on
 
     return (
         <div style={styles.detailCard}>
-            <h3 style={styles.detailTitle}>Detalle de la Bolsa</h3>
+            <h3 style={styles.detailTitle}>Detalle</h3>
             <p style={{ ...styles.detailText, ...getEstadoStyle(bolsa?.estado) }}>
               <strong>Estado:</strong> {bolsa?.estado || "---"}
             </p>
@@ -246,7 +246,7 @@ function ConsultarBolsa() {
   return (
     <Screen>
         <div style={styles.container}>
-          <h2 style={styles.title}>Consultar Bolsa (Solo Lectura)</h2>
+          <h2 style={styles.title}>Consultar (Solo Lectura)</h2>
           <button style={{...styles.qrButton,...((loading||!canScan)?styles.buttonDisabled:{})}} onClick={handleOpenQR} disabled={loading||!canScan}>
             {!canScan?"Iniciar sesión":loading?"Buscando...":"Escanear QR"}
           </button>

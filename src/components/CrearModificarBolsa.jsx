@@ -143,7 +143,7 @@ const modalContentStyles = { width: "90%", maxWidth: "380px", maxHeight: "80vh",
 const buttonBase = { height: "40px", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: 700, fontFamily: "Poppins, sans-serif", padding: "0 16px", };
 const btnGrey = { ...buttonBase, backgroundColor: "#ccc", color: "#000" };
 const btnGreen = { ...buttonBase, backgroundColor: "#16c76c", color: "#fff", marginBottom: "12px" };
-const cardHistorialStyle = { width: "343px", minHeight: "52px", marginBottom: "8px", backgroundColor: "#ffffff", borderRadius: "4px", boxShadow: "0px 2px 4px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", padding: "8px 12px", boxSizing: 'border-box', };
+const cardHistorialStyle = { width: "343px", minHeight: "52px", marginBottom: "8px", backgroundColor: "#ffffff", borderRadius: "4px", boxShadow: "0px 2px 4px rgba(0,0,0,.08)", display: "flex", alignItems: "center", padding: "8px 12px", boxSizing: 'border-box', };
 const getButtonGuardarStyle = (disabled) => ({ cursor: disabled ? "not-allowed" : "pointer", width: "150px", height: "42px", border: "0", boxSizing: "border-box", borderRadius: "6px", backgroundColor: disabled ? "#a0d8b8" : "#16c76c", color: "#ffffff", fontSize: "15px", fontFamily: "Poppins, sans-serif", fontWeight: 700, lineHeight: "20px", outline: "none", transition: "all 0.2s ease", opacity: disabled ? 0.6 : 1, });
 const getButtonEliminarStyle = (disabled) => ({ cursor: disabled ? "not-allowed" : "pointer", width: "150px", height: "42px", border: "0", boxSizing: "border-box", borderRadius: "6px", backgroundColor: disabled ? "#ff99aa" : "#ff2d55", color: "#ffffff", fontSize: "15px", fontFamily: "Poppins, sans-serif", fontWeight: 700, lineHeight: "20px", outline: "none", transition: "all 0.2s ease", opacity: disabled ? 0.6 : 1, });
 const styles = { memberCard: { width: "100%", boxSizing: 'border-box', backgroundColor: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: "8px", padding: "12px 16px", marginBottom: "16px", color: "#065f46", fontFamily: "Poppins, sans-serif", position: 'relative' }, memberTextTitle: { fontSize: "16px", fontWeight: "bold", marginBottom: "6px", color: '#047857' }, memberText: { fontSize: "14px", marginBottom: "4px", lineHeight: '1.5' }, deleteButton: { position: "absolute", top: 8, right: 8, border: "none", backgroundColor: "transparent", color: "#ef4444", fontSize: "20px", cursor: "pointer", padding: "0 4px", lineHeight: '1', fontWeight: 'bold' }, autocompleteDropdown: { position: 'absolute', left: 0, width: '307px', top: '100%', maxHeight: '200px', overflowY: 'auto', backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '0 0 6px 6px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', zIndex: 100, marginTop: '-1px', boxSizing: 'border-box' }, autocompleteItem: { padding: '10px 12px', cursor: 'pointer', fontSize: '14px', fontFamily: 'Poppins, sans-serif', borderBottom: '1px solid #eee', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }, autocompleteHint: { padding: '8px 12px', fontSize: '12px', color: '#666', fontStyle: 'italic', textAlign: 'center', borderTop: '1px solid #eee' } };
@@ -621,9 +621,6 @@ export default function CrearModificarBolsa() {
                     )}
                 </div>
 
-                {/* Mostrar ID si existe */}
-                {idBolsaNuevo && ( <div style={{ marginBottom: '16px' }}><div style={textLabelStyles}>ID Bolsa</div><input style={{ ...InputFieldEstadoBolsa({value:''}).props.style, backgroundColor:'#e9ecef', color:'#333', fontWeight:'bold' }} value={idBolsaNuevo} readOnly /></div> )}
-
                 {/* Estado Bolsa */}
                 <TextEstadoBolsa /> <InputFieldEstadoBolsa value={estadoBolsa} />
 
@@ -672,15 +669,26 @@ export default function CrearModificarBolsa() {
                 {historial.length === 0 ? <div style={{ color: "#666", marginBottom: "16px", textAlign: 'center', padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '4px' }}>Sin historial.</div>
                  : <div style={{maxHeight: '300px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '4px', padding: '8px', marginBottom: '16px'}}>
                      {historial.map((h, idx) => {
-                         let displayAction = h.accion;
-                         const match = displayAction.match(/^(.* por )(\S+)$/);
-                         if (match) {
-                             const actionPrefix = match[1];
-                             const usernameInAction = match[2];
-                             if (userInfo.username && usernameInAction === userInfo.username) {
-                                 displayAction = `${actionPrefix}${userInfo.name || usernameInAction}`;
+                         let displayAction = h.accion || "Acción no registrada";
+                         
+                         // --- Lógica para Mostrar Nombre (MEJORADA) ---
+                         // 1. Prioridad: Usar nombre_usuario_accion si existe en la entrada h
+                         if (h.nombre_usuario_accion) {
+                             const match = displayAction.match(/^(.* por )(\S+)(\s*.*)$/i);
+                             if (match && match[2]) { // Si la acción tiene formato "Acción por [username]"
+                                 // Reemplaza '[username]' con el nombre completo
+                                 displayAction = `${match[1]}${h.nombre_usuario_accion}${match[3] || ''}`;
                              }
                          }
+                         // 2. Fallback: Si no vino nombre del backend Y la acción coincide con el usuario actual logueado
+                         else if (userInfo?.username) {
+                             const regex = new RegExp(`(por\\s+)${userInfo.username}(\\s|$)`, 'i');
+                             if (displayAction.match(regex)) {
+                                 displayAction = displayAction.replace(regex, `$1${userInfo.name || userInfo.username}$2`);
+                             }
+                         }
+                         // --- Fin Lógica Nombre ---
+                         
                          return (
                             <CardHistorial key={idx}>
                                 <div style={{ padding: "4px 8px", fontSize: "13px", color: '#333', lineHeight: '1.5' }}>
