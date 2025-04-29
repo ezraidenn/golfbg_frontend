@@ -1,9 +1,11 @@
 // src/screens/Alerta.jsx
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
 // import Screen from "../components/Screen"; // Descomentar si usas Screen
 
 import { API_URL } from '../utils/api'
+import styles from './Alerta.module.css';
 
 const BASE_URL = API_URL;
 
@@ -41,25 +43,35 @@ function calcularRetraso(fechaDevolucionStr) {
 }
 
 // **********************************************
-// Tarjeta de Alerta (Sin Cambios Internos)
+// Tarjeta de Alerta (Con efecto de destello)
 // ***********************************************/
 function AlertCard({
     bolsa,
     memberDetailsMap, // Mapa completo miembro_code -> detalles
+    usuariosMap, // Mapa username -> nombre completo
     onSendReminder,
-    isSendingReminder
+    isSendingReminder,
+    isHighlighted,
+    userInfo
 }) {
     const retraso = calcularRetraso(bolsa.fecha_devolucion);
     const memberDetails = memberDetailsMap[bolsa.cliente_asignado] || null;
+    const cardRef = useRef(null);
 
-    const cardStyle = {
-        backgroundColor: "#FFFFFF",
-        borderRadius: "8px",
-        padding: "16px",
-        marginBottom: "16px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        border: "1px solid #E5E7EB"
-    };
+    // Efecto para el destello cuando se resalta una bolsa
+    useEffect(() => {
+        if (isHighlighted && cardRef.current) {
+            // Scroll hacia la tarjeta
+            cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            console.log(`Tarjeta de bolsa ${bolsa.id} resaltada: ${isHighlighted}`);
+        }
+    }, [isHighlighted, bolsa.id]);
+
+    // Estilos inline para la tarjeta resaltada
+    const cardStyle = isHighlighted ? {
+        backgroundColor: '#fee2e2',
+        border: '2px solid #f87171'
+    } : {};
 
     const headerStyle = {
         display: "flex",
@@ -99,13 +111,55 @@ function AlertCard({
                       isSendingReminder === 'sent' ? "✓ Enviado" :
                       isSendingReminder === 'error' ? "Error" : "Enviar Recordatorio";
 
+    // Obtener el nombre completo del responsable si está disponible
+    let responsableNombre = "No disponible";
+    let responsableUsername = "No disponible";
+    
+    // Verificar todos los posibles campos que podrían contener el username del responsable
+    if (bolsa.ultimo_usuario) {
+        responsableUsername = bolsa.ultimo_usuario;
+        responsableNombre = bolsa.ultimo_usuario;
+    } else if (bolsa.ultimo_usuario_historial) {
+        responsableUsername = bolsa.ultimo_usuario_historial;
+        responsableNombre = bolsa.ultimo_usuario_historial;
+    }
+    
+    // Buscar en el historial la última acción de préstamo para obtener el nombre completo
+    if (bolsa.historial && Array.isArray(bolsa.historial) && bolsa.historial.length > 0) {
+        // Buscar la última acción de préstamo con nombre_usuario_accion
+        for (const entrada of bolsa.historial) {
+            if (entrada.accion && 
+                entrada.accion.toLowerCase().includes('prestado') && 
+                entrada.nombre_usuario_accion) {
+                responsableNombre = entrada.nombre_usuario_accion;
+                break;
+            }
+        }
+    }
+    
+    // Si el usuario actual es el responsable, usar su nombre
+    if (userInfo && 
+        userInfo.username && 
+        userInfo.nombre && 
+        (userInfo.username === responsableUsername)) {
+        responsableNombre = userInfo.nombre;
+    }
+    
+    console.log(`[Alerta] Responsable para bolsa ${bolsa.id}: ${responsableUsername} (Nombre: ${responsableNombre})`);
+
     return (
-        <div style={cardStyle}>
+        <div 
+            ref={cardRef} 
+            className={`${styles.card} ${isHighlighted ? styles.highlightedCard : ''}`}
+            style={cardStyle}
+        >
             <div style={headerStyle}>
                 <div>
-                    <div style={titleStyle}>Bolsa {bolsa.id}</div>
-                    <div style={subtitleStyle}>
+                    <div style={titleStyle}>
                         {memberDetails ? `${memberDetails.FirstName} ${memberDetails.LastName}` : bolsa.cliente_asignado}
+                    </div>
+                    <div style={subtitleStyle}>
+                        Bolsa asignada
                     </div>
                 </div>
                 <AlertIcon />
@@ -116,6 +170,9 @@ function AlertCard({
                 </div>
                 <div style={{ fontSize: "14px", color: "#6B7280", marginTop: "4px" }}>
                     Fecha devolución: {new Date(bolsa.fecha_devolucion).toLocaleString()}
+                </div>
+                <div style={{ fontSize: "14px", color: "#6B7280", marginTop: "4px" }}>
+                    Responsable: {responsableNombre}
                 </div>
             </div>
             <button 
@@ -135,28 +192,93 @@ function AlertCard({
 export default function Alerta() {
   const [bolsasRetrasadas, setBolsasRetrasadas] = useState([]);
   const [memberDetailsMap, setMemberDetailsMap] = useState({});
+  const [usuariosMap, setUsuariosMap] = useState({});
   const [sendingStatus, setSendingStatus] = useState({});
+  const [highlightedBolsaId, setHighlightedBolsaId] = useState(null);
+  const [userInfo, setUserInfo] = useState({ name: null, username: null }); // Estado para usuario logueado
+  const [cacheUsuarios, setCacheUsuarios] = useState({}); // Caché de información de usuarios
   const token = localStorage.getItem("token");
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // --- Cargar bolsas retrasadas ---
-  const fetchBolsasRetrasadas = useCallback(async () => {
+  // Cargar perfil del usuario actual
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!token) return;
+      
+      try {
+        const response = await fetch(`${BASE_URL}/usuarios/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setUserInfo({
+            name: data.name || data.username,
+            username: data.username
+          });
+          
+          // Guardar en caché
+          setCacheUsuarios(prev => ({
+            ...prev,
+            [data.username]: data.name || data.username
+          }));
+          
+          console.log("[Alerta] Perfil de usuario cargado:", data.username);
+        }
+      } catch (error) {
+        console.error("Error cargando perfil de usuario:", error);
+      }
+    };
+    
+    fetchUserProfile();
+  }, [token]);
+
+  // Extraer el ID de la bolsa de los parámetros de URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const bolsaId = searchParams.get('highlight');
+    if (bolsaId) {
+      const bolsaIdInt = parseInt(bolsaId, 10);
+      setHighlightedBolsaId(bolsaIdInt);
+      console.log(`Resaltando bolsa ID: ${bolsaIdInt}`);
+    } else {
+      setHighlightedBolsaId(null);
+    }
+  }, [location]);
+
+  // Cargar bolsas retrasadas
+  const cargarBolsasRetrasadas = useCallback(async () => {
     if (!token) return;
 
     try {
       const response = await fetch(`${BASE_URL}/bolsas/retrasadas/`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       if (!response.ok) throw new Error(`Error ${response.status}`);
 
       const data = await response.json();
+      console.log("[Alerta] Bolsas retrasadas recibidas:", data);
+      
+      // Imprimir un ejemplo de bolsa para ver su estructura
+      if (data && data.length > 0) {
+        console.log("[Alerta] Ejemplo de estructura de bolsa:", JSON.stringify(data[0], null, 2));
+      }
+      
+      // Simplemente usar los datos tal como vienen
       setBolsasRetrasadas(data);
 
       // Extraer códigos de cliente únicos
       const clienteCodes = [...new Set(data.map(b => b.cliente_asignado))];
       
-      // Cargar detalles de miembros
-      await fetchMemberDetails(clienteCodes);
+      // Llamar a las funciones para obtener detalles
+      if (clienteCodes.length > 0) {
+        // Usar el endpoint correcto para miembros
+        fetchMemberDetails(clienteCodes);
+      }
 
     } catch (error) {
       console.error("Error cargando bolsas retrasadas:", error);
@@ -164,49 +286,151 @@ export default function Alerta() {
     }
   }, [token]);
 
+  // --- Obtener información de usuarios ---
+  const obtenerInformacionUsuarios = async (username, token) => {
+    console.log(`[Alerta] Buscando información para el usuario: ${username}`);
+    
+    // Si ya tenemos el nombre en caché, lo usamos
+    if (cacheUsuarios[username]) {
+      console.log(`[Alerta] Usando nombre en caché para ${username}: ${cacheUsuarios[username]}`);
+      return cacheUsuarios[username];
+    }
+    
+    try {
+      // Intentar obtener el usuario actual
+      const userResponse = await fetch(`${BASE_URL}/usuarios/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData && userData.nombre) {
+          console.log(`[Alerta] Perfil de usuario actual obtenido: ${userData.nombre}`);
+          cacheUsuarios[username] = userData.nombre;
+          return userData.nombre;
+        }
+      }
+      
+      // Si no se encuentra el nombre, usar el username como fallback
+      console.log(`[Alerta] No se encontró nombre para ${username}, usando username como fallback`);
+      return username;
+    } catch (error) {
+      console.log(`[Alerta] Error obteniendo información del usuario ${username}:`, error);
+      return username;
+    }
+  };
+
   // --- Cargar detalles de miembros ---
   const fetchMemberDetails = async (clienteCodes) => {
     if (!token || !clienteCodes.length) return;
 
     try {
-      const response = await fetch(`${BASE_URL}/miembros/details`, {
-        method: 'POST',
+      const response = await fetch(`${BASE_URL}/miembros?q=${clienteCodes[0]}`, {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ codes: clienteCodes })
+        }
       });
 
       if (!response.ok) throw new Error(`Error ${response.status}`);
 
       const details = await response.json();
-      setMemberDetailsMap(details);
+      
+      // Crear un mapa de código -> detalles
+      const detailsMap = {};
+      if (Array.isArray(details)) {
+        details.forEach(member => {
+          if (member && member.ClubMemberCode) {
+            detailsMap[member.ClubMemberCode] = member;
+          }
+        });
+      }
+      
+      setMemberDetailsMap(detailsMap);
 
     } catch (error) {
       console.error("Error cargando detalles de miembros:", error);
     }
   };
+  
+  // --- Cargar todos los usuarios ---
+  const fetchAllUsers = async () => {
+    if (!token) return;
+    
+    try {
+      const response = await fetch(`${BASE_URL}/usuarios/all`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!response.ok) {
+        console.error(`Error al obtener usuarios: ${response.status}`);
+        // Si falla, usar al menos el usuario actual
+        if (userInfo && userInfo.username) {
+          const fallbackMap = { [userInfo.username]: userInfo.name || userInfo.username };
+          setUsuariosMap(fallbackMap);
+        }
+        return;
+      }
+      
+      const usuarios = await response.json();
+      
+      // Crear un mapa de username -> nombre completo
+      const map = {};
+      if (Array.isArray(usuarios)) {
+        usuarios.forEach(usuario => {
+          if (usuario && usuario.username) {
+            // Usar el campo name como nombre completo
+            map[usuario.username] = usuario.name || usuario.username;
+          }
+        });
+        console.log("[Alerta] Mapa de usuarios cargado:", map);
+        setUsuariosMap(map);
+      } else {
+        console.error("Datos de usuarios no válidos:", usuarios);
+        // Usar al menos el usuario actual
+        if (userInfo && userInfo.username) {
+          const fallbackMap = { [userInfo.username]: userInfo.name || userInfo.username };
+          setUsuariosMap(fallbackMap);
+        }
+      }
+    } catch (error) {
+      console.error("Error cargando todos los usuarios:", error);
+      // Usar al menos el usuario actual
+      if (userInfo && userInfo.username) {
+        const fallbackMap = { [userInfo.username]: userInfo.name || userInfo.username };
+        setUsuariosMap(fallbackMap);
+      }
+    }
+  };
 
   // --- Efecto para cargar datos iniciales ---
   useEffect(() => {
-    fetchBolsasRetrasadas();
-  }, [fetchBolsasRetrasadas]);
+    cargarBolsasRetrasadas();
+  }, [cargarBolsasRetrasadas]);
 
   // --- Handler para enviar notificación CORREGIDO ---
-  const handleSendNotification = async (bolsaId, responsibleUserCode) => {
+  const handleSendNotification = async (bolsaId, clienteCode) => {
       if (!token) { alert("Error: No autenticado."); return; }
-      if (!responsibleUserCode) { alert("Error: No se pudo identificar al usuario responsable."); return; }
-
+      
       setSendingStatus(prev => ({ ...prev, [bolsaId]: 'sending' }));
-      console.log(`Enviando recordatorio para bolsa ${bolsaId} a usuario ${responsibleUserCode}...`);
+      console.log(`Enviando recordatorio para bolsa ${bolsaId} a cliente ${clienteCode}...`);
 
       const notificationUrl = `${BASE_URL}/notifications/recordatorio`;
       const bolsa = bolsasRetrasadas.find(b => b.id === bolsaId);
-      const memberDetails = memberDetailsMap[responsibleUserCode];
-      const memberName = memberDetails ? `${memberDetails.FirstName} ${memberDetails.LastName}` : responsibleUserCode;
+      const memberDetails = memberDetailsMap[clienteCode];
+      const memberName = memberDetails ? `${memberDetails.FirstName} ${memberDetails.LastName}` : clienteCode;
 
       try {
+          // Obtener el usuario actual (admin u otro)
+          const userResponse = await fetch(`${BASE_URL}/usuarios/me`, {
+              headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (!userResponse.ok) throw new Error(`Error ${userResponse.status} al obtener usuario actual`);
+          
+          const userData = await userResponse.json();
+          const currentUsername = userData.username;
+          
+          // Enviar notificación a todos los administradores y al usuario actual
           const response = await fetch(notificationUrl, {
               method: 'POST',
               headers: {
@@ -214,10 +438,10 @@ export default function Alerta() {
                   Authorization: `Bearer ${token}`
               },
               body: JSON.stringify({
-                  mensaje: `⚠️ Recordatorio: La bolsa ${bolsaId} asignada a ${memberName} está retrasada.`,
-                  usuarios: [responsibleUserCode],
+                  mensaje: `⚠️ Recordatorio: La bolsa asignada a ${memberName} está retrasada.`,
+                  usuarios: ["admin", currentUsername], // Notificar al admin y al usuario actual
                   tipo: "recordatorio_bolsa",
-                  link: `/bolsas/${bolsaId}`
+                  link: `/alerta?highlight=${bolsaId}` // Link que llevará a la pantalla de alertas con la bolsa resaltada
               })
           });
 
@@ -235,28 +459,31 @@ export default function Alerta() {
           }
 
           setSendingStatus(prev => ({ ...prev, [bolsaId]: 'sent' }));
-          console.log(`Recordatorio enviado exitosamente para bolsa ${bolsaId} a ${responsibleUserCode}`);
+          console.log(`Recordatorio enviado exitosamente para bolsa ${bolsaId}`);
 
       } catch (error) {
           console.error("Error enviando notificación:", error);
-          alert(`Error al enviar recordatorio a ${responsibleUserCode}: ${error.message}`);
+          alert(`Error al enviar recordatorio: ${error.message}`);
           setSendingStatus(prev => ({ ...prev, [bolsaId]: 'error' }));
       }
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Bolsas Retrasadas</h1>
+    <div className={styles.container}>
+      <h1 className={styles.title}>Bolsas Retrasadas</h1>
       {bolsasRetrasadas.length === 0 ? (
-        <div style={styles.emptyState}>No hay bolsas retrasadas</div>
+        <div className={styles.emptyState}>No hay bolsas retrasadas</div>
       ) : (
         bolsasRetrasadas.map(bolsa => (
           <AlertCard
             key={bolsa.id}
             bolsa={bolsa}
             memberDetailsMap={memberDetailsMap}
+            usuariosMap={usuariosMap}
             onSendReminder={handleSendNotification}
             isSendingReminder={sendingStatus[bolsa.id]}
+            isHighlighted={bolsa.id === highlightedBolsaId}
+            userInfo={userInfo}
           />
         ))
       )}
@@ -264,15 +491,6 @@ export default function Alerta() {
   );
 }
 
-// --- Estilos (Originales) ---
-const styles = {
-  container: { margin: "0 auto", maxWidth: "420px", minHeight: "100vh", backgroundColor: "#f5f5f5", padding: "16px", paddingBottom: "80px", fontFamily: "Poppins, sans-serif", boxSizing: "border-box", },
-  title: { fontSize: "20px", fontWeight: "bold", marginBottom: "20px", textAlign: "center", color: '#333', },
-  emptyState: { textAlign: "center", color: "#666", marginTop: "32px", fontSize: "16px", },
-  loadingState: { textAlign: "center", color: "#666", marginTop: "32px", fontSize: "16px", },
-  errorState: { textAlign: "center", color: "#dc2626", marginTop: "32px", fontSize: "16px", },
-};
-
 function Screen({ children }) {
-  return <div style={styles.container}>{children}</div>;
+  return <div className={styles.container}>{children}</div>;
 }
