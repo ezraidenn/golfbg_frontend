@@ -77,7 +77,7 @@ function QRManagementModal({ isOpen, onClose }) {
         if (selectedMemberCode) params.append("clienteAsignado", selectedMemberCode);
         params.append("limit", "500");
 
-        const requestUrl = `${BASE_URL}/admin/qrcodes?${params.toString()}`;
+        const requestUrl = `${BASE_URL}/qrcodes?${params.toString()}`;
         console.log("Fetching:", requestUrl);
 
         try {

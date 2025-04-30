@@ -104,7 +104,25 @@ export default function MiPerfil() {
     const currentPreviewUrl = useRef(null);
 
     // Formateador de Fecha
-    const formatLastLogin = useCallback((dateString) => { if (!dateString) return "Nunca"; try { return new Date(dateString).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }); } catch { return "Inválida"; } }, []);
+    const formatLastLogin = useCallback((dateString) => { 
+        if (!dateString) return "Nunca"; 
+        try { 
+            // Crear la fecha a partir del string
+            const date = new Date(dateString);
+            
+            // Restar 6 horas para ajustar la diferencia de zona horaria
+            date.setHours(date.getHours() - 6);
+            
+            // Formatear la fecha ajustada
+            return date.toLocaleString('es-MX', { 
+                dateStyle: 'medium', 
+                timeStyle: 'short'
+            }); 
+        } catch (error) { 
+            console.error("Error formateando fecha:", error);
+            return "Inválida"; 
+        } 
+    }, []);
 
     // --- Cargar Perfil y Usuarios Admin ---
     const loadProfileAndAdminData = useCallback(async () => {
@@ -334,6 +352,9 @@ export default function MiPerfil() {
                                             <div style={styles.adminUserInfo}>
                                                 <span style={styles.adminUserName}>{user.name || user.username}</span>
                                                 <span style={styles.adminUserRole}>({user.rol})</span>
+                                                <div style={{fontSize: '12px', color: '#666', marginTop: '2px'}}>
+                                                    Último login: {formatLastLogin(user.last_login)}
+                                                </div>
                                             </div>
                                             <div style={styles.adminUserActions}>
                                                 <button style={{...styles.adminButton, ...styles.adminEditBtn}} onClick={() => openEditModal(user)} disabled={loadingAdminAction} title="Editar">✏️</button>

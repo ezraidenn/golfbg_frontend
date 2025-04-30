@@ -97,8 +97,19 @@ export default function MiPerfil() {
     const formatLastLogin = (dateString) => {
         if (!dateString) return "Nunca";
         try {
-            return new Date(dateString).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
-        } catch {
+            // Crear la fecha a partir del string
+            const date = new Date(dateString);
+            
+            // Restar 6 horas para ajustar la diferencia de zona horaria
+            date.setHours(date.getHours() - 6);
+            
+            // Formatear la fecha ajustada
+            return date.toLocaleString('es-MX', { 
+                dateStyle: 'medium', 
+                timeStyle: 'short'
+            });
+        } catch (error) {
+            console.error("Error formateando fecha:", error);
             return "Fecha inválida";
         }
     };
