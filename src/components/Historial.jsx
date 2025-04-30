@@ -43,8 +43,12 @@ const ACTION_TYPES = { PRESTADA: 'PRESTADA', DEVUELTA: 'DEVUELTA', RETRASADA: 'R
 
 function getActionType(actionText) {
     const text = (actionText || "").toLowerCase();
+    // Patrones más precisos para cada tipo de acción
     if (/prestó|prestado|asignad|activad|entregad/i.test(text)) return ACTION_TYPES.PRESTADA;
-    if (/devolvió|devuelt|retornad|recibid/i.test(text)) return ACTION_TYPES.DEVUELTA;
+    
+    // Para devuelta - mejorada para capturar más variantes
+    if (/devolvió|devuelto|devolver|regres[aó]|recibid|retornad/i.test(text)) return ACTION_TYPES.DEVUELTA;
+    
     if (/retrasad/i.test(text)) return ACTION_TYPES.RETRASADA;
     if (/modificó|modificad|actualizad|creado/i.test(text)) return ACTION_TYPES.MODIFICADA;
     return ACTION_TYPES.OTRO;
@@ -60,25 +64,43 @@ function formatName(first, last, code) {
 
 // --- buildSentence MEJORADO ---
 function buildSentence(m, memberMap) {
-    const usuario = m.usuario || "Sistema";
+    // Verificar si hay nombre_usuario_accion disponible, si no, usar usuario
+    // IMPORTANTE: Este es el nombre completo que queremos mostrar siempre
+    const nombreMostrar = m.nombre_usuario_accion || m.usuario || "Sistema";
+    
+    // Texto original de la acción (sin procesar)
     const accionRaw = m.accion || "realizó una acción desconocida";
+    
     // Extraer el ID de la bolsa si está en _internalId (para el fallback)
     const bolsaIdFromInternal = m._internalId ? String(m._internalId).split('-')[0] : '';
     const bolsaId = m.bolsa_id || bolsaIdFromInternal || 'Bolsa Desconocida'; // <-- Añadir ID Bolsa
+    
+    // Determinar el tipo de acción
     const actionType = getActionType(accionRaw);
 
+    // Datos del cliente
     const clienteCode = m.cliente ? String(m.cliente).trim() : "";
     const clienteName = clienteCode ? (memberMap[clienteCode] || clienteCode) : "N/A";
 
+    // Construir la oración con el NOMBRE COMPLETO, no el username
     let sentence = null;
 
-    // Incluir ID de la Bolsa en la oración
+    // Incluir ID de la Bolsa en la oración y usar SIEMPRE nombreMostrar
     switch (actionType) {
-        case ACTION_TYPES.PRESTADA: sentence = (<><span style={styles.bold}>{usuario}</span> prestó la bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> al cliente <span style={styles.bold}>{clienteName}</span></>}</>); break;
-        case ACTION_TYPES.DEVUELTA: sentence = (<><span style={styles.bold}>{usuario}</span> devolvió la bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> del cliente <span style={styles.bold}>{clienteName}</span></>}</>); break;
-        case ACTION_TYPES.RETRASADA: sentence = (<><span style={styles.bold}>{usuario}</span> marcó retrasada la bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> del cliente <span style={styles.bold}>{clienteName}</span></>}</>); break;
-        case ACTION_TYPES.MODIFICADA: sentence = (<><span style={styles.bold}>{usuario}</span> modificó la bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> (Cliente: <span style={styles.bold}>{clienteName}</span>)</>}</>); break;
-        default: sentence = (<><span style={styles.bold}>{usuario}</span> {accionRaw} en bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> (Cliente: <span style={styles.bold}>{clienteName}</span>)</>}</>);
+        case ACTION_TYPES.PRESTADA: 
+            sentence = (<><span style={styles.bold}>{nombreMostrar}</span> prestó la bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> al cliente <span style={styles.bold}>{clienteName}</span></>}</>); 
+            break;
+        case ACTION_TYPES.DEVUELTA: 
+            sentence = (<><span style={styles.bold}>{nombreMostrar}</span> devolvió la bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> del cliente <span style={styles.bold}>{clienteName}</span></>}</>); 
+            break;
+        case ACTION_TYPES.RETRASADA: 
+            sentence = (<><span style={styles.bold}>{nombreMostrar}</span> marcó retrasada la bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> del cliente <span style={styles.bold}>{clienteName}</span></>}</>); 
+            break;
+        case ACTION_TYPES.MODIFICADA: 
+            sentence = (<><span style={styles.bold}>{nombreMostrar}</span> modificó la bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> (Cliente: <span style={styles.bold}>{clienteName}</span>)</>}</>); 
+            break;
+        default: 
+            sentence = (<><span style={styles.bold}>{nombreMostrar}</span> {accionRaw} en bolsa <span style={styles.bold}>{bolsaId}</span>{clienteCode && <> (Cliente: <span style={styles.bold}>{clienteName}</span>)</>}</>);
     }
 
     let fechaStr = ""; if (m._dt instanceof Date && !isNaN(m._dt)) { try { fechaStr = m._dt.toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { fechaStr = m._dt.toString(); } }
@@ -124,8 +146,70 @@ export default function Historial() {
             const currentToken = localStorage.getItem("token"); setToken(currentToken);
             if (!currentToken) { setError("No autenticado."); setLoading(false); return; }
             let data = [];
-            try { const resHistorial = await fetch(`${BASE_URL}/bolsas/historial`, { headers: { Authorization: `Bearer ${currentToken}` } }); if (resHistorial.ok) { data = await resHistorial.json(); if (!Array.isArray(data)) data = []; } else if (resHistorial.status !== 404) { throw new Error(`Error ${resHistorial.status} historial`); } } catch (histError) { console.warn("/bolsas/historial error:", histError.message); }
-            if (data.length === 0) { console.log("Fallback: Obteniendo historial desde /bolsas"); try { const resBolsas = await fetch(`${BASE_URL}/bolsas`, { headers: { Authorization: `Bearer ${currentToken}` } }); if (!resBolsas.ok) throw new Error(`Error ${resBolsas.status} bolsas`); const bolsas = await resBolsas.json(); bolsas.forEach((b) => { (b.historial || []).forEach((h, index) => { const orig = h.accion || ""; let accionText=orig, usuarioText=""; const porIndex = orig.lastIndexOf(" por "); if(porIndex>-1){accionText=orig.substring(0,porIndex).trim(); usuarioText=orig.substring(porIndex+5).trim();}else{accionText=orig.trim();} const fechaHistorial=h.fecha||new Date(0).toISOString(); data.push({...h, _internalId:`${b.id||'bolsa'}-${fechaHistorial}-${index}`, cliente:b.cliente_asignado, bolsa_id: b.id, accion:accionText, usuario:usuarioText||'Desconocido', fecha:fechaHistorial }); }); }); } catch (bolsaError) { console.error("ERROR Fallback:", bolsaError); setError(bolsaError.message || "Error cargando historial"); setLoading(false); return; } }
+            try { 
+                console.log("Obteniendo historial desde /bolsas");
+                const resBolsas = await fetch(`${BASE_URL}/bolsas`, { headers: { Authorization: `Bearer ${currentToken}` } }); 
+                if (!resBolsas.ok) throw new Error(`Error ${resBolsas.status} bolsas`); 
+                const bolsas = await resBolsas.json(); 
+                
+                // Creando un mapa de usernames a nombres completos para enriquecer el historial
+                const usernameMap = {};
+                
+                // Primero recopilamos todos los registros del historial para construir el mapa
+                bolsas.forEach(b => {
+                    (b.historial || []).forEach(h => {
+                        // Si tiene nombre_usuario_accion y podemos extraer el username
+                        const porIndex = (h.accion || "").lastIndexOf(" por ");
+                        if (porIndex > -1 && h.nombre_usuario_accion) {
+                            const username = h.accion.substring(porIndex + 5).trim();
+                            // Solo si el username no tiene espacios (para evitar confusiones)
+                            if (username && !username.includes(" ")) {
+                                usernameMap[username] = h.nombre_usuario_accion;
+                            }
+                        }
+                    });
+                });
+                
+                console.log("Mapa de usuarios:", usernameMap);
+                
+                // Ahora procesamos todos los registros, enriqueciendo con el mapa
+                bolsas.forEach((b) => { 
+                    (b.historial || []).forEach((h, index) => { 
+                        const orig = h.accion || ""; 
+                        let accionText=orig, usuarioText=""; 
+                        const porIndex = orig.lastIndexOf(" por "); 
+                        if(porIndex>-1){
+                            accionText=orig.substring(0,porIndex).trim(); 
+                            usuarioText=orig.substring(porIndex+5).trim();
+                            
+                            // Si no tiene nombre_usuario_accion pero el username está en nuestro mapa
+                            if (!h.nombre_usuario_accion && usuarioText && usernameMap[usuarioText]) {
+                                h.nombre_usuario_accion = usernameMap[usuarioText];
+                            }
+                        } else {
+                            accionText=orig.trim();
+                        } 
+                        const fechaHistorial=h.fecha||new Date(0).toISOString(); 
+                        data.push({
+                            ...h, 
+                            _internalId:`${b.id||'bolsa'}-${fechaHistorial}-${index}`, 
+                            cliente:b.cliente_asignado, 
+                            bolsa_id: b.id, 
+                            accion:accionText, 
+                            usuario:usuarioText||'Desconocido', 
+                            fecha:fechaHistorial,
+                            // Preservar nombre_usuario_accion si está presente o asignar desde mapa
+                            nombre_usuario_accion: h.nombre_usuario_accion || 
+                                                   (usuarioText ? usernameMap[usuarioText] : null)
+                        }); 
+                    }); 
+                }); 
+            } catch (error) { 
+                console.error("ERROR cargando historial:", error); 
+                setError(error.message || "Error cargando historial"); 
+                setLoading(false); 
+                return; 
+            }
             const normalized = data.map((m) => { let dt = new Date(0); try { const pd = new Date(m.fecha); if (!isNaN(pd.getTime())) dt = pd; } catch (e) {} return { ...m, _dt: dt, _key: m.id || m._internalId || `hist-${Math.random()}` }; });
             setMovimientos(normalized);
             const uniqueClientCodes = Array.from(new Set(normalized.map(m => m.cliente).filter(c => c && String(c).trim()))); const map = {};
@@ -213,17 +297,141 @@ export default function Historial() {
                 <h3 style={styles.title}>Historial de movimientos</h3>
                 <div style={styles.filterSection}>
                      {/* ... JSX Filtros ... */}
-                     <div style={styles.flexRow}> <div style={styles.autocompleteContainer}> <input ref={searchInputRef} style={searchInputStyle} placeholder="Buscar cliente, código, usuario..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setPage(1); if (!e.target.value) setShowSuggestions(false); }} onFocus={() => searchTerm && searchSuggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 250)} disabled={loading} autoComplete="off" /> {loadingSuggestions && <span style={{ position: 'absolute', right: 10, top: 10, fontSize: 12, color: '#888' }}>...</span>} {showSuggestions && ( <div style={styles.autocompleteDropdown}> {searchSuggestions.length > 0 ? ( searchSuggestions.map((suggestion, index) => ( <div key={suggestion.code || index} style={{...styles.autocompleteItem, ...(index === searchSuggestions.length - 1 ? styles.autocompleteItemLast : {})}} onMouseDown={(e) => e.preventDefault()} onClick={() => handleSelectSuggestion(suggestion.value)} title={`Seleccionar: ${suggestion.value}`}> {suggestion.display} ({suggestion.code}) </div> )) ) : ( !loadingSuggestions && <div style={{...styles.autocompleteItem, color: '#888', cursor: 'default'}}>No hay sugerencias</div> )} </div> )} </div> <select style={daysDropdownStyle} value={days ?? ""} onChange={e => { const value = e.target.value; setDays(value === "" ? null : Number(value)); setPage(1); }} disabled={loading}> {lastDaysOptions.map(o => ( <option key={o.label} value={o.value ?? ""}>{o.label}</option> ))} </select> </div>
-                     <div style={styles.flexRow}> <input type="date" style={dateInputStyle} value={desde} onChange={e => { setDesde(e.target.value); setPage(1); }} disabled={loading || days != null} title={days != null ? "Deshabilitado" : "Fecha Desde"} /> <input type="date" style={dateInputStyle} value={hasta} onChange={e => { setHasta(e.target.value); setPage(1); }} disabled={loading || days != null} title={days != null ? "Deshabilitado" : "Fecha Hasta"} /> </div>
-                     <div style={styles.checkboxContainer}> {[ { lbl: "Prestada", chk: fPrestada, set: setFPrestada }, { lbl: "Devuelta", chk: fDevuelta, set: setFDevuelta }, { lbl: "Retrasada", chk: fRetrasada, set: setFRetrasada }, { lbl: "Modificada", chk: fModificada, set: setFModificada } ].map(c => ( <label key={c.lbl} style={styles.label}> <input type="checkbox" checked={c.chk} onChange={e => {c.set(e.target.checked); setPage(1);}} disabled={loading}/> {c.lbl} </label> ))} </div>
-                     <div style={{...styles.flexRow, justifyContent: 'space-between', alignItems: 'center', marginTop: '16px'}}> <label style={{ ...styles.label }}> <input type="checkbox" checked={orderAsc} onChange={e => { setOrderAsc(e.target.checked); setPage(1); }} disabled={loading}/> Orden Ascendente </label> <button style={buttonClearStyle} onClick={handleClearFilters} disabled={loading}> Limpiar Filtros </button> </div>
+                     <div style={styles.flexRow}> 
+                         <div style={styles.autocompleteContainer}> 
+                             <input 
+                                 ref={searchInputRef} 
+                                 style={searchInputStyle} 
+                                 placeholder="Buscar cliente, código, usuario..." 
+                                 value={searchTerm} 
+                                 onChange={e => { 
+                                     setSearchTerm(e.target.value); 
+                                     setPage(1); 
+                                     if (!e.target.value) setShowSuggestions(false); 
+                                 }} 
+                                 onFocus={() => searchTerm && searchSuggestions.length > 0 && setShowSuggestions(true)} 
+                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 250)} 
+                                 disabled={loading} 
+                                 autoComplete="off" 
+                             /> 
+                             {loadingSuggestions && <span style={{ position: 'absolute', right: 10, top: 10, fontSize: 12, color: '#888' }}>...</span>} 
+                             {showSuggestions && ( 
+                                 <div style={styles.autocompleteDropdown}> 
+                                     {searchSuggestions.length > 0 ? ( 
+                                         searchSuggestions.map((suggestion, index) => ( 
+                                             <div 
+                                                 key={suggestion.code || index} 
+                                                 style={{...styles.autocompleteItem, ...(index === searchSuggestions.length - 1 ? styles.autocompleteItemLast : {})}} 
+                                                 onMouseDown={(e) => e.preventDefault()} 
+                                                 onClick={() => handleSelectSuggestion(suggestion.value)} 
+                                                 title={`Seleccionar: ${suggestion.value}`}
+                                             > 
+                                                 {suggestion.display} ({suggestion.code}) 
+                                             </div> 
+                                         )) 
+                                     ) : ( 
+                                         !loadingSuggestions && <div style={{...styles.autocompleteItem, color: '#888', cursor: 'default'}}>No hay sugerencias</div> 
+                                     )} 
+                                 </div> 
+                             )} 
+                         </div> 
+                         <select 
+                             style={daysDropdownStyle} 
+                             value={days ?? ""} 
+                             onChange={e => { 
+                                 const value = e.target.value; 
+                                 setDays(value === "" ? null : Number(value)); 
+                                 setPage(1); 
+                             }} 
+                             disabled={loading}
+                         > 
+                             {lastDaysOptions.map(o => ( 
+                                 <option key={o.label} value={o.value ?? ""}>{o.label}</option> 
+                             ))} 
+                         </select> 
+                     </div>
+                     <div style={styles.flexRow}> 
+                         <input 
+                             type="date" 
+                             style={dateInputStyle} 
+                             value={desde} 
+                             onChange={e => { 
+                                 setDesde(e.target.value); 
+                                 setPage(1); 
+                             }} 
+                             disabled={loading || days != null} 
+                             title={days != null ? "Deshabilitado" : "Fecha Desde"} 
+                         /> 
+                         <input 
+                             type="date" 
+                             style={dateInputStyle} 
+                             value={hasta} 
+                             onChange={e => { 
+                                 setHasta(e.target.value); 
+                                 setPage(1); 
+                             }} 
+                             disabled={loading || days != null} 
+                             title={days != null ? "Deshabilitado" : "Fecha Hasta"} 
+                         /> 
+                     </div>
+                     <div style={styles.checkboxContainer}> 
+                         {[ 
+                             { lbl: "Prestada", chk: fPrestada, set: setFPrestada }, 
+                             { lbl: "Devuelta", chk: fDevuelta, set: setFDevuelta }, 
+                             { lbl: "Retrasada", chk: fRetrasada, set: setFRetrasada }, 
+                             { lbl: "Modificada", chk: fModificada, set: setFModificada } 
+                         ].map(c => ( 
+                             <label key={c.lbl} style={styles.label}> 
+                                 <input 
+                                     type="checkbox" 
+                                     checked={c.chk} 
+                                     onChange={e => {c.set(e.target.checked); setPage(1);}} 
+                                     disabled={loading}
+                                 /> 
+                                 {c.lbl} 
+                             </label> 
+                         ))} 
+                     </div>
+                     <div style={{...styles.flexRow, justifyContent: 'space-between', alignItems: 'center', marginTop: '16px'}}> 
+                         <label style={{ ...styles.label }}> 
+                             <input 
+                                 type="checkbox" 
+                                 checked={orderAsc} 
+                                 onChange={e => { 
+                                     setOrderAsc(e.target.checked); 
+                                     setPage(1); 
+                                 }} 
+                                 disabled={loading}
+                             /> 
+                             Orden Ascendente 
+                         </label> 
+                         <button 
+                             style={buttonClearStyle} 
+                             onClick={handleClearFilters} 
+                             disabled={loading}
+                         > 
+                             Limpiar Filtros 
+                         </button> 
+                     </div>
                 </div>
                 {/* --- Resultados --- */}
                 {loading && <div style={styles.loadingIndicator}>Cargando historial...</div>}
                 {error && <div style={styles.errorIndicator}>{error}</div>}
-                {!loading && !error && itemsToShow.length === 0 && ( <p style={styles.noResults}>No se encontraron movimientos.</p> )}
-                {!loading && !error && itemsToShow.map(movimiento => ( <MovementCard key={movimiento._key} movimiento={movimiento} memberMap={memberMap}/> ))}
-                {!loading && canLoadMore && ( <button style={buttonMoreStyle} onClick={handleLoadMore} disabled={loading}> Ver más ({totalFilteredCount - itemsToShow.length} restantes) </button> )}
+                {!loading && !error && itemsToShow.length === 0 && ( 
+                    <p style={styles.noResults}>No se encontraron movimientos.</p> 
+                )}
+                {!loading && !error && itemsToShow.map(movimiento => ( 
+                    <MovementCard key={movimiento._key} movimiento={movimiento} memberMap={memberMap}/> 
+                ))}
+                {!loading && canLoadMore && ( 
+                    <button 
+                        style={buttonMoreStyle} 
+                        onClick={handleLoadMore} 
+                        disabled={loading}
+                    > 
+                        Ver más ({totalFilteredCount - itemsToShow.length} restantes) 
+                    </button> 
+                )}
             </div>
         </Screen>
     );

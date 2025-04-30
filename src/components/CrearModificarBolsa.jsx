@@ -155,7 +155,6 @@ const warningIgnoreButtonStyle = { ...buttonBase, backgroundColor: "#16c76c", co
 const warningCancelButtonStyle = { ...buttonBase, backgroundColor: "#ff2d55", color: "#fff", padding: '8px 16px', height: 'auto' };
 // --- Fin Estilos ---
 
-
 // --- Componentes de Texto (Sin Cambios) ---
 function TextEstadoBolsa() { return <div style={textLabelStyles}>Estado de la Bolsa</div>; }
 function TextMiembroAsignado() { return <div style={textLabelStyles}>Miembro asignado</div>; }
@@ -166,7 +165,6 @@ function TextFechaDevolucion() { return <div style={textLabelStyles}>¿Cuándo s
 function TextItemsEnLaBolsa() { return <div style={textLabelStyles}>Ítems en la Bolsa</div>; }
 // --- Fin Componentes de Texto ---
 
-
 // --- Inputs Principales (Sin Cambios) ---
 function InputFieldEstadoBolsa({ value }) { let b="#f5f5f5"; value==="Disponible"&&(b="#ccffcc"); value==="En tránsito"&&(b="#ffcccc"); const s={width:"343px",height:"40px",padding:"0 8px",border:0,boxSizing:"border-box",borderRadius:"6px",boxShadow:"0 1px 2px rgba(0,0,0,.05)",backgroundColor:b,color:"#333",fontSize:"16px",fontFamily:"Poppins, sans-serif",lineHeight:"40px",outline:"none",marginBottom:"16px"}; return <input style={s} value={value} readOnly placeholder="Estado"/>; }
 function InputFieldBuscarCliente({ value, onChange, disabled }) { const s={width:"307px",height:"40px",padding:"0 8px",border:"1px solid #cbd5e1",boxSizing:"border-box",borderRadius:"6px",boxShadow:"0 1px 2px rgba(0,0,0,.05)",backgroundColor:disabled?"#e9ecef":"#fff",color:value?"#333":"#94a3b8",fontSize:"16px",fontFamily:"Poppins, sans-serif",lineHeight:"40px",outline:"none",marginBottom:"16px",cursor:disabled?"not-allowed":"text"}; return <input style={s} placeholder="Buscar miembro (código o nombre)" value={value} onChange={onChange} disabled={disabled}/>; }
@@ -175,33 +173,323 @@ function InputFieldFechaProximoMantenimiento({ value, onChange, disabled }) { co
 function InputFieldFechaDevolucion({ value, onChange, disabled }) { const s={width:"343px",height:"42px",padding:"0 8px",border:"1px solid #cbd5e1",boxSizing:"border-box",borderRadius:"6px",boxShadow:"0 1px 2px rgba(0,0,0,.05)",backgroundColor:disabled?"#e9ecef":"#fff",color:value?"#333":"#94a3b8",fontSize:"16px",fontFamily:"Poppins, sans-serif",lineHeight:"42px",outline:"none",marginBottom:"16px",cursor:disabled?"not-allowed":"text"}; return <input type="datetime-local" style={s} value={value||""} onChange={e=>onChange(e.target.value)} disabled={disabled}/>; }
 // --- Fin Inputs Principales ---
 
-
 // --- Modal Selección Almacén (Sin Cambios Funcionales) ---
-function SubnivelItem({ pathSoFar, nivel, selectedPath, setSelectedPath }) { const cP=[...pathSoFar,nivel.nombre]; const pS=cP.join(" / "); const hC=()=>setSelectedPath(pS); const iS=pS===selectedPath; const iSt={margin:"8px 0",padding:"6px 8px",border:"1px solid #ccc",borderRadius:"4px",cursor:"pointer",backgroundColor:iS?"#bdf7ce":"#f5f5f5",fontWeight:iS?700:400,transition:"all .2s ease"}; return(<div style={{marginLeft:12,marginBottom:8}}><div style={iSt} onClick={hC}>{nivel.nombre}</div>{nivel.subniveles?.map(sub=>(<SubnivelItem key={sub.id} pathSoFar={cP} nivel={sub} selectedPath={selectedPath} setSelectedPath={setSelectedPath}/>))}</div>); }
-function ModalSeleccionAlmacen({ isOpen, onClose, almacenes, onSeleccionUbicacion }) { const[s,setS]=useState(1); const[sA,setSA]=useState(null); const[e,setE]=useState([]); const[sP,setSP]=useState(""); const[t]=useState(localStorage.getItem("token")); useEffect(()=>{isOpen&&(setS(1),setSA(null),setE([]),setSP(""))},[isOpen]); const hK=()=>onClose(); const vE=async a=>{try{const r=await fetch(`${BASE_URL}/auditoria/${a.id}`,{headers:{Authorization:`Bearer ${t}`}}); if(!r.ok)throw new Error("Error"); const d=await r.json(); setSA(a); setSP(a.nombre); setE(d.estructura||[]); setS(2)}catch(r){console.error(r); alert("Error carga estructura")};}; const hV=()=>{setS(1); setSA(null); setE([]); setSP("")}; const hGU=()=>{if(!sP)return alert("No seleccionado."); onSeleccionUbicacion(sP); onClose()}; if(!isOpen)return null; return(<div style={modalOverlayStyles} onClick={hK}><div style={modalContentStyles} onClick={e=>e.stopPropagation()}>{s===1&&(<> <h3 style={{marginBottom:12}}>Selecciona Almacén</h3> {almacenes.length===0?<p>No hay</p>:almacenes.map(a=>(<button key={a.id} style={{...btnGreen,width:"100%"}} onClick={()=>vE(a)}>{a.nombre}</button>))} <button style={{...btnGrey,width:"100%"}} onClick={hK}>Cancelar</button></>)}{s===2&&(<> <h3 style={{marginBottom:8}}>Estructura: {sA?.nombre}</h3> <div style={{fontSize:14,marginBottom:12,color:"#666"}}>Subniveles</div> <div style={{marginBottom:16}}>{e.length===0?<p style={{color:"#999"}}>Vacío.</p>:e.map(n=>(<SubnivelItem key={n.id} pathSoFar={[sA?.nombre||""]} nivel={n} selectedPath={sP} setSelectedPath={setSP}/>))}</div> <button style={{...btnGreen,width:"100%"}} onClick={hGU}>Guardar Ubicación</button> <div style={{display:"flex",gap:8}}> <button style={{...btnGrey,flex:1}} onClick={hV}>Volver</button> <button style={{...btnGrey,flex:1}} onClick={hK}>Cancelar</button></div></>)}</div></div>); }
+function SubnivelItem({ pathSoFar, nivel, selectedPath, setSelectedPath }) { 
+    // Crear la ruta completa incluyendo el nivel actual
+    const cP = [...pathSoFar, nivel.nombre]; 
+    // Unir la ruta con separador "/"
+    const pS = cP.join(" / "); 
+    // Handler para seleccionar esta ruta
+    const hC = () => setSelectedPath(pS); 
+    // Verificar si esta ruta es la seleccionada
+    const iS = pS === selectedPath; 
+    // Estilos para el ítem
+    const iSt = {
+        margin: "8px 0",
+        padding: "6px 8px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        cursor: "pointer",
+        backgroundColor: iS ? "#bdf7ce" : "#f5f5f5",
+        fontWeight: iS ? 700 : 400,
+        transition: "all .2s ease"
+    }; 
+    
+    return (
+        <div style={{marginLeft: 12, marginBottom: 8}}>
+            <div style={iSt} onClick={hC}>{nivel.nombre}</div>
+            {nivel.subniveles?.map(sub => (
+                <SubnivelItem 
+                    key={sub.id} 
+                    pathSoFar={cP} 
+                    nivel={sub} 
+                    selectedPath={selectedPath} 
+                    setSelectedPath={setSelectedPath}
+                />
+            ))}
+        </div>
+    ); 
+}
+function ModalSeleccionAlmacen({ isOpen, onClose, almacenes, onSeleccionUbicacion }) { 
+    const[s,setS]=useState(1); 
+    const[sA,setSA]=useState(null); 
+    const[e,setE]=useState([]); 
+    const[sP,setSP]=useState(""); 
+    const[t]=useState(localStorage.getItem("token")); 
+    
+    useEffect(()=>{
+        if(isOpen) {
+            setS(1);
+            setSA(null);
+            setE([]);
+            setSP("");
+        }
+    },[isOpen]); 
+    
+    const hK=()=>onClose(); 
+    
+    const vE=async a=>{
+        try{
+            const r=await fetch(`${BASE_URL}/auditoria/${a.id}`,{
+                headers:{Authorization:`Bearer ${t}`}
+            }); 
+            if(!r.ok) throw new Error("Error"); 
+            const d=await r.json(); 
+            setSA(a); 
+            // Inicializar la ruta con el nombre de la bodega
+            setSP(a.nombre); 
+            setE(d.estructura||[]); 
+            setS(2);
+        } catch(r){
+            console.error(r); 
+            alert("Error carga estructura");
+        }
+    }; 
+    
+    const hV=()=>{
+        setS(1); 
+        setSA(null); 
+        setE([]); 
+        setSP("");
+    }; 
+    
+    const hGU=()=>{
+        if(!sP) return alert("No seleccionado."); 
+        // Asegurarnos de que la ruta completa se pasa al componente padre
+        onSeleccionUbicacion(sP); 
+        onClose();
+    }; 
+    
+    if(!isOpen) return null; 
+    
+    return(
+        <div style={modalOverlayStyles} onClick={hK}>
+            <div style={modalContentStyles} onClick={e=>e.stopPropagation()}>
+                {s===1 && (
+                    <> 
+                        <h3 style={{marginBottom:12}}>Selecciona Almacén</h3> 
+                        {almacenes.length===0 ? 
+                            <p>No hay almacenes disponibles</p> : 
+                            almacenes.map(a=>(
+                                <button 
+                                    key={a.id} 
+                                    style={{...btnGreen,width:"100%", marginBottom: "8px"}} 
+                                    onClick={()=>vE(a)}
+                                >
+                                    {a.nombre}
+                                </button>
+                            ))
+                        } 
+                        <button style={{...btnGrey,width:"100%"}} onClick={hK}>Cancelar</button>
+                    </>
+                )}
+                {s===2 && (
+                    <> 
+                        <h3 style={{marginBottom:8}}>Estructura: {sA?.nombre}</h3> 
+                        <div style={{fontSize:14,marginBottom:12,color:"#666"}}>Subniveles</div> 
+                        <div style={{marginBottom:16}}>
+                            {e.length===0 ? 
+                                <p style={{color:"#999"}}>No hay subniveles disponibles.</p> : 
+                                e.map(n=>(
+                                    <SubnivelItem 
+                                        key={n.id} 
+                                        pathSoFar={[sA?.nombre||""]} 
+                                        nivel={n} 
+                                        selectedPath={sP} 
+                                        setSelectedPath={setSP}
+                                    />
+                                ))
+                            }
+                        </div> 
+                        <button style={{...btnGreen,width:"100%"}} onClick={hGU}>Guardar Ubicación</button> 
+                        <div style={{display:"flex",gap:8, marginTop: "10px"}}> 
+                            <button style={{...btnGrey,flex:1}} onClick={hV}>Volver</button> 
+                            <button style={{...btnGrey,flex:1}} onClick={hK}>Cancelar</button>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    ); 
+}
 // --- Fin Modal Selección Almacén ---
-
 
 // --- Historial Card (Sin Cambios) ---
 function CardHistorial({ children }) { return <div style={cardHistorialStyle}>{children}</div>; }
 // --- Fin Historial Card ---
-
 
 // --- Botones Guardar/Eliminar (Sin Cambios) ---
 function ButtonGuardarBolsa({ onClick, disabled }) { return <button style={getButtonGuardarStyle(disabled)} onClick={onClick} disabled={disabled}>Guardar Bolsa</button>; }
 function ButtonEliminarBolsa({ onClick, disabled }) { return <button style={getButtonEliminarStyle(disabled)} onClick={onClick} disabled={disabled}>Eliminar Bolsa</button>; }
 // --- Fin Botones Guardar/Eliminar ---
 
-
 // --- Fila de Ítem (ItemRow) (Sin Cambios Funcionales Internos) ---
-function ItemRow({ item, index, onChange, onRemove, onPhotoFileSelected, onPhotoAPIDelete, isUploading, uploadError, disabled, }) { const fIR=useRef(null); const[pU,setPU]=useState(null); useEffect(()=>{let cPU=null; if(item.photo_file){cPU=URL.createObjectURL(item.photo_file); setPU(cPU); console.log(`[Item ${index}] Created preview: ${cPU}`)}else{setPU(null)} return()=>{if(cPU){URL.revokeObjectURL(cPU); console.log(`[Item ${index}] Revoked preview: ${cPU}`)}}},[item.photo_file,index]); const gPS=()=>{if(pU)return pU; if(item.photo_filename){const bUC=BASE_URL.endsWith("/")?BASE_URL.slice(0,-1):BASE_URL; return`${bUC}/static/item_photos/${item.photo_filename}?t=${Date.now()}`} return null}; const pS=gPS(); const hFC=e=>{const f=e.target.files?e.target.files[0]:null; if(!f)return; if(!f.type.startsWith("image/")){alert("Solo imágenes."); e.target.value=null; return} if(f.size>5*1024*1024){alert("Máx 5MB."); e.target.value=null; return} onPhotoFileSelected(index,f); if(fIR.current)fIR.current.value=""}; const hTFI=()=>{fIR.current?.click()}; const hDP=()=>{if(item.photo_filename){onPhotoAPIDelete(index,item.photo_filename)}else{onPhotoFileSelected(index,null)}}; const pAD=isUploading||disabled; return(<div style={itemRowStyle}><label style={itemLabelStyle}>Descripción</label><input style={getItemInputStyle(disabled)} placeholder="Descripción" value={item.descripcion} onChange={e=>onChange(index,{...item,descripcion:e.target.value})} disabled={disabled}/><label style={itemLabelStyle}>Cantidad</label><input type="number" style={getItemInputStyle(disabled)} placeholder="0" min="0" value={item.cantidad} onChange={e=>{const v=e.target.value; const n=v===""?"":parseInt(v,10); if(v===""||(!isNaN(n)&&n>=0)){onChange(index,{...item,cantidad:n})}}} disabled={disabled}/><label style={itemLabelStyle}>Estado</label><select style={getItemSelectStyle(disabled)} value={item.estado} onChange={e=>onChange(index,{...item,estado:e.target.value})} disabled={disabled}><option value="Buen estado">Buen estado</option><option value="Regular">Regular</option><option value="Mal estado">Mal estado</option><option value="Requiere Mantenimiento">Requiere Mantenimiento</option></select><label style={itemLabelStyle}>Comentario</label><textarea style={getItemTextareaStyle(disabled)} placeholder="Observaciones..." value={item.comentario} onChange={e=>onChange(index,{...item,comentario:e.target.value})} disabled={disabled}/><div style={photoSectionStyle}><label style={itemLabelStyle}>Foto Ítem</label><div style={photoPreviewContainerStyle}>{pS?<img src={pS} alt={`Ítem ${index+1}`} style={photoPreviewStyle}/>:<div style={noPhotoDivStyle}>Sin foto</div>}<div style={photoButtonsContainerStyle}><input ref={fIR} type="file" accept="image/*" capture="environment" style={fileInputHiddenStyle} onChange={hFC} disabled={pAD}/><button type="button" style={getFileInputLabelStyle(pAD)} onClick={hTFI} disabled={pAD}>{pS?"Cambiar Foto":"Añadir Foto"}</button>{pS&&(<button type="button" style={getDeletePhotoButton(pAD)} onClick={hDP} disabled={pAD}>Eliminar Foto</button>)}</div></div>{isUploading&&<div style={photoStatusStyle}>Subiendo...</div>}{uploadError&&<div style={photoErrorStyle}>{uploadError}</div>}</div><button style={getItemDeleteButtonStyle(disabled)} onClick={()=>onRemove(index)} disabled={disabled}>Eliminar Ítem</button></div>); }
+function ItemRow({ item, index, onChange, onRemove, onPhotoFileSelected, onPhotoAPIDelete, isUploading, uploadError, disabled, onImageClick }) { 
+    const fIR=useRef(null); 
+    const[pU,setPU]=useState(null); 
+    
+    useEffect(()=>{
+        let cPU=null; 
+        if(item.photo_file){
+            cPU=URL.createObjectURL(item.photo_file); 
+            setPU(cPU); 
+            console.log(`[Item ${index}] Created preview: ${cPU}`)
+        } else {
+            setPU(null)
+        } 
+        return()=>{
+            if(cPU){
+                URL.revokeObjectURL(cPU); 
+                console.log(`[Item ${index}] Revoked preview: ${cPU}`)
+            }
+        }
+    },[item.photo_file,index]); 
+    
+    const gPS=()=>{
+        if(pU)return pU; 
+        if(item.photo_filename){
+            const bUC=BASE_URL.endsWith("/")?BASE_URL.slice(0,-1):BASE_URL; 
+            return`${bUC}/static/item_photos/${item.photo_filename}?t=${Date.now()}`
+        } 
+        return null
+    }; 
+    
+    const pS=gPS(); 
+    
+    const hFC=e=>{
+        const f=e.target.files?e.target.files[0]:null; 
+        if(!f)return; 
+        if(!f.type.startsWith("image/")){
+            alert("Solo imágenes."); 
+            e.target.value=null; 
+            return
+        } 
+        if(f.size>5*1024*1024){
+            alert("Máx 5MB."); 
+            e.target.value=null; 
+            return
+        } 
+        onPhotoFileSelected(index,f); 
+        if(fIR.current)fIR.current.value=""
+    }; 
+    
+    const hTFI=()=>{
+        fIR.current?.click()
+    }; 
+    
+    const hDP=()=>{
+        if(item.photo_filename){
+            onPhotoAPIDelete(index,item.photo_filename)
+        } else {
+            onPhotoFileSelected(index,null)
+        }
+    }; 
+    
+    const handleImageClick = () => {
+        if (pS) {
+            onImageClick(pS);
+        }
+    };
+    
+    const pAD=isUploading||disabled; 
+    
+    return(
+        <div style={itemRowStyle}>
+            <label style={itemLabelStyle}>Descripción</label>
+            <input style={getItemInputStyle(disabled)} placeholder="Descripción" value={item.descripcion} onChange={e=>onChange(index,{...item,descripcion:e.target.value})} disabled={disabled}/>
+            
+            <label style={itemLabelStyle}>Cantidad</label>
+            <input type="number" style={getItemInputStyle(disabled)} placeholder="0" min="0" value={item.cantidad} onChange={e=>{const v=e.target.value; const n=v===""?"":parseInt(v,10); if(v===""||(!isNaN(n)&&n>=0)){onChange(index,{...item,cantidad:n})}}} disabled={disabled}/>
+            
+            <label style={itemLabelStyle}>Estado</label>
+            <select style={getItemSelectStyle(disabled)} value={item.estado} onChange={e=>onChange(index,{...item,estado:e.target.value})} disabled={disabled}>
+                <option value="Buen estado">Buen estado</option>
+                <option value="Regular">Regular</option>
+                <option value="Mal estado">Mal estado</option>
+                <option value="Requiere Mantenimiento">Requiere Mantenimiento</option>
+            </select>
+            
+            <label style={itemLabelStyle}>Comentario</label>
+            <textarea style={getItemTextareaStyle(disabled)} placeholder="Observaciones..." value={item.comentario} onChange={e=>onChange(index,{...item,comentario:e.target.value})} disabled={disabled}/>
+            
+            <div style={photoSectionStyle}>
+                <label style={itemLabelStyle}>Foto Ítem</label>
+                <div style={photoPreviewContainerStyle}>
+                    {pS ? 
+                        <img 
+                            src={pS} 
+                            alt={`Ítem ${index+1}`} 
+                            style={{...photoPreviewStyle, cursor: 'pointer'}} 
+                            onClick={handleImageClick}
+                            title="Click para ampliar"
+                        /> 
+                        : 
+                        <div style={noPhotoDivStyle}>Sin foto</div>
+                    }
+                    <div style={photoButtonsContainerStyle}>
+                        <input ref={fIR} type="file" accept="image/*" capture="environment" style={fileInputHiddenStyle} onChange={hFC} disabled={pAD}/>
+                        <button type="button" style={getFileInputLabelStyle(pAD)} onClick={hTFI} disabled={pAD}>{pS?"Cambiar Foto":"Añadir Foto"}</button>
+                        {pS && (<button type="button" style={getDeletePhotoButton(pAD)} onClick={hDP} disabled={pAD}>Eliminar Foto</button>)}
+                    </div>
+                </div>
+                {isUploading && <div style={photoStatusStyle}>Subiendo...</div>}
+                {uploadError && <div style={photoErrorStyle}>{uploadError}</div>}
+            </div>
+            
+            <button style={getItemDeleteButtonStyle(disabled)} onClick={()=>onRemove(index)} disabled={disabled}>Eliminar Ítem</button>
+        </div>
+    ); 
+}
 // --- Fin Fila de Ítem ---
-
 
 // --- Modal Advertencia (Sin Cambios) ---
 function WarningModal({ memberName, memberStatus, onIgnore, onCancel }) { return(<div style={warningOverlayStyle} onClick={onCancel}><div style={warningModalStyle} onClick={e=>e.stopPropagation()}><h3 style={warningTitleStyle}>ATENCIÓN</h3><p style={{fontSize:"16px",lineHeight:"1.6"}}>El miembro <strong>{memberName}</strong> tiene estado: <strong style={{color:getStatusColor(memberStatus)}}>{ClubStatusMeanings[memberStatus?.trim().toUpperCase()]||memberStatus||"Desconocido"}</strong>.<br/><br/>¿Continuar y guardar?</p><div style={warningButtonContainerStyle}><button style={warningIgnoreButtonStyle} onClick={onIgnore}>Sí, Guardar</button><button style={warningCancelButtonStyle} onClick={onCancel}>No, Cancelar</button></div></div></div>); }
 // --- Fin Modal Advertencia ---
 
+// --- Modal de Imagen en Pantalla Completa ---
+function ImageFullScreenModal({ isOpen, imageUrl, onClose }) {
+    if (!isOpen || !imageUrl) return null;
+    
+    const modalStyle = {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10000,
+        flexDirection: 'column'
+    };
+    
+    const imageStyle = {
+        maxWidth: '90%',
+        maxHeight: '80%',
+        objectFit: 'contain'
+    };
+    
+    const closeButtonStyle = {
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        background: 'transparent',
+        border: 'none',
+        color: 'white',
+        fontSize: '24px',
+        cursor: 'pointer',
+        zIndex: 10001
+    };
+    
+    return (
+        <div style={modalStyle} onClick={onClose}>
+            <button style={closeButtonStyle} onClick={onClose}>✕</button>
+            <img src={imageUrl} style={imageStyle} alt="Vista ampliada" onClick={(e) => e.stopPropagation()} />
+        </div>
+    );
+}
+// --- Fin Modal de Imagen en Pantalla Completa ---
 
 // --- Componente Principal: CrearModificarBolsa ---
 export default function CrearModificarBolsa() {
@@ -239,6 +527,10 @@ export default function CrearModificarBolsa() {
     // Estado Modal Advertencia
     const [showWarning, setShowWarning] = useState(false);
 
+    // Estado Modal Imagen en Pantalla Completa
+    const [showImageFullScreen, setShowImageFullScreen] = useState(false);
+    const [imageFullScreenUrl, setImageFullScreenUrl] = useState("");
+
     // Handler para agregar un nuevo ítem
     const handleAgregarItem = () => {
         const newItem = {
@@ -247,7 +539,6 @@ export default function CrearModificarBolsa() {
             cantidad: 1,
             estado: "Buen estado",
             comentario: "",
-            photo_filename: null,
             photo_file: null,
             is_uploading: false,
             upload_error: null
@@ -371,18 +662,13 @@ export default function CrearModificarBolsa() {
             return;
         }
 
-        if (!userInfo.username) {
-            showNotification("No se pudo obtener información del usuario. Recarga la página.", 'error');
-            return;
-        }
-
         setIsLoading(true);
 
         try {
             // 1. Preparar Payload
             const nuevaEntradaHistorial = {
                 fecha: new Date().toISOString(), // Usar formato ISO estándar
-                accion: `${isNewCreation ? 'Creado' : 'Modificado'} por ${userInfo.username}` // <-- Guarda el username
+                accion: `${isNewCreation ? 'Creado' : 'Modificado'} por ${userInfo.username || "system"}`
             };
             const updatedHistorial = [nuevaEntradaHistorial, ...(Array.isArray(historial) ? historial : [])];
 
@@ -403,8 +689,19 @@ export default function CrearModificarBolsa() {
                 fecha_mantenimiento: fechaMantenimiento.trim() || null,
                 items: itemsForPayload,
                 fecha_devolucion: fechaDevolucion || null,
-                historial: updatedHistorial, // Enviar el historial actualizado
+                historial: updatedHistorial,
             };
+
+            // Añadir los componentes individuales de la ubicación
+            if (ubicacion) {
+                const partes = ubicacion.split(' / ').map(p => p.trim());
+                payload.area_general = partes[0] || null;
+                payload.pasillo = partes[1] || null;
+                payload.estante_nivel = partes[2] || null;
+                payload.anden = partes[3] || null;
+            }
+
+            console.log("Payload de guardado:", payload); // Log para depuración
 
             // 2. Determinar Método y URL
             const encodedId = encodeURIComponent(idBolsaNuevo.trim());
@@ -512,10 +809,16 @@ export default function CrearModificarBolsa() {
 
             const data = await response.json();
             
+            console.log("Datos de bolsa recuperada:", data); // Añadir log para depuración
+            
             // Actualizar todos los estados con la información de la bolsa
             setIdBolsaNuevo(data.id);
             setEstadoBolsa(data.estado || "Disponible");
-            setUbicacion(data.ubicacion || "");
+            // Intentar obtener ubicacion_completa primero, si no existe usar la alternativa
+            setUbicacion(data.ubicacion_completa || 
+                         [data.area_general, data.pasillo, data.estante_nivel, data.anden].filter(Boolean).join(' / ') || 
+                         data.ubicacion || 
+                         "");
             setClienteAsignado(data.cliente_asignado || "");
             setNotasInternas(data.notas_internas || "");
             setFechaMantenimiento(data.fecha_mantenimiento || "");
@@ -541,6 +844,55 @@ export default function CrearModificarBolsa() {
         setMemberQuery("");
         setMemberOptions([]);
     };
+
+    // Handler para mostrar imagen en pantalla completa
+    const handleShowImageFullScreen = (url) => {
+        setImageFullScreenUrl(url);
+        setShowImageFullScreen(true);
+    };
+
+    // Handler para cerrar imagen en pantalla completa
+    const handleCloseImageFullScreen = () => {
+        setShowImageFullScreen(false);
+    };
+
+    // Cargar información del usuario al iniciar el componente
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            const storedToken = localStorage.getItem("token");
+            if (!storedToken) { 
+                setUserInfo({ name: "Desconocido", username: "system" }); 
+                return; 
+            }
+            
+            setToken(storedToken);
+            
+            try {
+                const response = await fetch(`${BASE_URL}/usuarios/me`, {
+                    headers: {
+                        Authorization: `Bearer ${storedToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    setUserInfo({
+                        name: userData.name || userData.username || "Usuario",
+                        username: userData.username || "system"
+                    });
+                } else {
+                    // Si hay un error, establecemos un username por defecto para evitar bloqueos
+                    setUserInfo({ name: "Usuario (Error)", username: "system" });
+                }
+            } catch (error) {
+                console.error("Error al cargar perfil de usuario:", error);
+                // Establecemos un username por defecto para evitar bloqueos
+                setUserInfo({ name: "Usuario (Error Red)", username: "system" });
+            }
+        };
+        
+        fetchUserProfile();
+    }, []);
 
     // --- Render (Sin Cambios Estructurales) ---
     const isFormDisabled = isLoading || isFetchingBag;
@@ -626,12 +978,35 @@ export default function CrearModificarBolsa() {
 
                 {/* Ubicación */}
                 <div style={textLabelStyles}>Ubicación</div>
-                <input style={{ ...getItemInputStyle(true), width: '343px', height: '40px', marginBottom: '8px' }} value={ubicacion} readOnly placeholder="Selecciona..." />
-                <button style={{ ...btnPrimary, width: "343px", height: '40px', opacity: isFormDisabled ? 0.6 : 1, cursor: isFormDisabled ? 'not-allowed' : 'pointer', marginBottom: '16px' }} onClick={handleOpenModal} disabled={isFormDisabled}> Seleccionar / Cambiar </button>
-
+                <div style={{ 
+                    ...getItemInputStyle(true), 
+                    width: '343px', 
+                    minHeight: '40px', 
+                    marginBottom: '8px',
+                    padding: '8px 12px',
+                    display: 'flex',
+                    alignItems: 'center'
+                }}>
+                    {ubicacion || 'Selecciona...'}
+                </div>
+                <button 
+                    style={{ 
+                        ...btnPrimary, 
+                        width: "343px", 
+                        height: '40px', 
+                        opacity: isFormDisabled ? 0.6 : 1, 
+                        cursor: isFormDisabled ? 'not-allowed' : 'pointer', 
+                        marginBottom: '16px' 
+                    }} 
+                    onClick={handleOpenModal} 
+                    disabled={isFormDisabled}
+                > 
+                    Seleccionar / Cambiar 
+                </button>
+                
                 {/* Miembro Asignado */}
                 <TextMiembroAsignado />
-                {selectedMember ? ( <div style={styles.memberCard}> <button onClick={handleDeselectMember} style={{...styles.deleteButton, cursor: isFormDisabled ? 'not-allowed' : 'pointer'}} title="Desasignar" disabled={isFormDisabled}> × </button> <div style={styles.memberTextTitle}>{selectedMember.FirstName} {selectedMember.LastName}</div> <div style={styles.memberText}>Código: {selectedMember.ClubMemberCode}</div> <div style={styles.memberText}>Edad: {selectedMember.Age ?? "N/D"}</div> <div style={styles.memberText}>Estado: <span style={{ color: getStatusColor(selectedMember.ClubStatusRuleCode), fontWeight: 'bold' }}>{ClubStatusMeanings[selectedMember.ClubStatusRuleCode?.trim().toUpperCase()] || selectedMember.ClubStatusRuleCode || "N/D"}</span></div> </div> )
+                {selectedMember ? ( <div style={styles.memberCard}> <button onClick={handleDeselectMember} style={{...styles.deleteButton, cursor: isFormDisabled ? 'not-allowed' : 'pointer'}} title="Desasignar" disabled={isFormDisabled}> × </button> <div style={styles.memberTextTitle}>{selectedMember.FirstName} {selectedMember.LastName}</div> <div style={styles.memberText}>Código: {selectedMember.ClubMemberCode}</div> <div style={styles.memberText}>Edad: {selectedMember.Age ?? "N/D"}</div> <div style={styles.memberText}>Estado: <span style={{ color: getStatusColor(selectedMember.ClubStatusRuleCode), fontWeight: 'bold' }}>{ClubStatusMeanings[selectedMember.ClubStatusRuleCode?.trim().toUpperCase()]||selectedMember.ClubStatusRuleCode||"N/D"}</span></div> </div> )
                  : clienteAsignado ? ( <div style={{ ...styles.memberCard, backgroundColor: '#fffbe6', borderColor: '#fde68a', color: '#92400e'}}> <button onClick={handleDeselectMember} style={{...styles.deleteButton, color: '#d97706', cursor: isFormDisabled ? 'not-allowed' : 'pointer'}} title="Desasignar" disabled={isFormDisabled}> × </button> <div style={styles.memberText}>Código Asignado: {clienteAsignado}</div> <div style={{fontSize: '12px', marginTop: '4px'}}>(Detalles no cargados)</div> </div> )
                  : <div style={{ marginBottom: "16px", fontSize: "14px", color: "#6b7280", padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '4px', textAlign:'center' }}>Ningún miembro asignado.</div> }
 
@@ -654,7 +1029,7 @@ export default function CrearModificarBolsa() {
 
                 {/* Lista de Ítems */}
                 <TextItemsEnLaBolsa />
-                {items.map((item, idx) => ( <ItemRow key={item.tempId || `item-${idx}`} item={item} index={idx} onChange={handleItemChange} onRemove={handleRemoveItem} onPhotoFileSelected={handlePhotoFileSelected} onPhotoAPIDelete={handlePhotoAPIDelete} isUploading={item.is_uploading||false} uploadError={item.upload_error||null} disabled={isFormDisabled} /> ))}
+                {items.map((item, idx) => ( <ItemRow key={item.tempId || `item-${idx}`} item={item} index={idx} onChange={handleItemChange} onRemove={handleRemoveItem} onPhotoFileSelected={handlePhotoFileSelected} onPhotoAPIDelete={handlePhotoAPIDelete} isUploading={item.is_uploading||false} uploadError={item.upload_error||null} disabled={isFormDisabled} onImageClick={handleShowImageFullScreen} /> ))}
                 <button style={{ ...itemButtonStyle, width: '100%', height: '40px', backgroundColor: isFormDisabled ? '#a0aec0' : '#0077cc', cursor: isFormDisabled ? 'not-allowed' : 'pointer', opacity: isFormDisabled ? 0.6 : 1, marginBottom: '16px' }} onClick={handleAgregarItem} disabled={isFormDisabled}> + Agregar Ítem </button>
 
                 {/* Botones Acción Principal */}
@@ -668,36 +1043,64 @@ export default function CrearModificarBolsa() {
                 <TextHistorialUso />
                 {historial.length === 0 ? <div style={{ color: "#666", marginBottom: "16px", textAlign: 'center', padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '4px' }}>Sin historial.</div>
                  : <div style={{maxHeight: '300px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '4px', padding: '8px', marginBottom: '16px'}}>
-                     {historial.map((h, idx) => {
-                         let displayAction = h.accion || "Acción no registrada";
-                         
-                         // --- Lógica para Mostrar Nombre (MEJORADA) ---
-                         // 1. Prioridad: Usar nombre_usuario_accion si existe en la entrada h
-                         if (h.nombre_usuario_accion) {
-                             const match = displayAction.match(/^(.* por )(\S+)(\s*.*)$/i);
-                             if (match && match[2]) { // Si la acción tiene formato "Acción por [username]"
-                                 // Reemplaza '[username]' con el nombre completo
-                                 displayAction = `${match[1]}${h.nombre_usuario_accion}${match[3] || ''}`;
-                             }
-                         }
-                         // 2. Fallback: Si no vino nombre del backend Y la acción coincide con el usuario actual logueado
-                         else if (userInfo?.username) {
-                             const regex = new RegExp(`(por\\s+)${userInfo.username}(\\s|$)`, 'i');
-                             if (displayAction.match(regex)) {
-                                 displayAction = displayAction.replace(regex, `$1${userInfo.name || userInfo.username}$2`);
-                             }
-                         }
-                         // --- Fin Lógica Nombre ---
-                         
-                         return (
-                            <CardHistorial key={idx}>
-                                <div style={{ padding: "4px 8px", fontSize: "13px", color: '#333', lineHeight: '1.5' }}>
-                                    <strong>{new Date(h.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}:</strong><br/>
-                                    {displayAction}
-                                </div>
-                            </CardHistorial>
-                         );
-                     })}
+                     {(() => {
+                        // --- Construir mapa de usernames a nombres completos ---
+                        const usernameMap = {};
+                        historial.forEach(h => {
+                            const orig = h.accion || "";
+                            const porIndex = orig.lastIndexOf(" por ");
+                            if (porIndex > -1 && h.nombre_usuario_accion) {
+                                const username = orig.substring(porIndex + 5).trim();
+                                if (username && !username.includes(" ")) {
+                                    usernameMap[username] = h.nombre_usuario_accion;
+                                }
+                            }
+                        });
+                        
+                        // --- Enriquecimiento con mapa y procesamiento ---
+                        return historial.map((h, idx) => {
+                            let displayAction = h.accion || "Acción no registrada";
+                            let enrichedItem = {...h};
+                            
+                            // Aplicar mapa de usernames si no tiene nombre_usuario_accion
+                            if (!h.nombre_usuario_accion) {
+                                const porIndex = displayAction.lastIndexOf(" por ");
+                                if (porIndex > -1) {
+                                    const username = displayAction.substring(porIndex + 5).trim();
+                                    if (username && usernameMap[username]) {
+                                        enrichedItem.nombre_usuario_accion = usernameMap[username];
+                                    }
+                                }
+                            }
+                            
+                            // --- Lógica para Mostrar Nombre (MEJORADA) ---
+                            // 1. Prioridad: Usar nombre_usuario_accion si existe en la entrada h
+                            if (enrichedItem.nombre_usuario_accion) {
+                                const match = displayAction.match(/^(.* por )(\S+)(\s*.*)$/i);
+                                if (match && match[2]) { // Si la acción tiene formato "Acción por [username]"
+                                    // Reemplaza '[username]' con el nombre completo
+                                    displayAction = `${match[1]}${enrichedItem.nombre_usuario_accion}${match[3] || ''}`;
+                                }
+                            }
+                            // 2. Fallback: Si no vino nombre del backend Y la acción coincide con el usuario actual logueado
+                            else if (userInfo?.username) {
+                                const regex = new RegExp(`(por\\s+)${userInfo.username}(\\s|$)`, 'i');
+                                if (displayAction.match(regex)) {
+                                    displayAction = displayAction.replace(regex, `$1${userInfo.name || userInfo.username}$2`);
+                                }
+                            }
+                            // --- Fin Lógica Nombre ---
+                            
+                            return (
+                               <CardHistorial key={idx}>
+                                   <div style={{ padding: "4px 8px", fontSize: "13px", color: '#333', lineHeight: '1.5' }}>
+                                       <strong>{new Date(h.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}:</strong><br/>
+                                       {displayAction}
+                                   </div>
+                               </CardHistorial>
+                            );
+                        });
+                    })()}
                    </div>
                 }
                 {/* --- Fin Mostrar Historial --- */}
@@ -708,6 +1111,7 @@ export default function CrearModificarBolsa() {
             {modalOpen && <ModalSeleccionAlmacen isOpen={modalOpen} onClose={() => setModalOpen(false)} almacenes={almacenes} onSeleccionUbicacion={handleSeleccionUbicacion} />}
             {showQRScanner && ( <div style={modalOverlayStyles}> <div style={{ backgroundColor: "#fff", borderRadius: "8px", padding: "16px", width: "340px", maxWidth: "95%", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}> <h3 style={{marginTop: 0, marginBottom: '16px', textAlign: 'center'}}>Escanear Código QR</h3> <QRScanner onResult={handleQRCodeScanned} onClose={handleCloseQRScanner} /> <button onClick={handleCloseQRScanner} style={{...btnGrey, width: '100%', marginTop: '16px'}}>Cancelar</button> </div> </div> )}
             {showWarning && selectedMember && <WarningModal memberName={`${selectedMember.FirstName} ${selectedMember.LastName}`} memberStatus={selectedMember.ClubStatusRuleCode} onIgnore={handleIgnoreWarning} onCancel={handleCancelWarning} />}
+            {showImageFullScreen && <ImageFullScreenModal isOpen={showImageFullScreen} imageUrl={imageFullScreenUrl} onClose={handleCloseImageFullScreen} />}
 
         </div> // Fin containerStyle
     );

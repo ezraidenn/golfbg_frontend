@@ -54,9 +54,148 @@ function InputNotasInternas({ value, onChange, disabled }) { const s={display:"b
 function InputFechaMantenimiento({ value, onChange, disabled }) { const s={display:"block",margin:"8px auto 0 auto",width:"311px",height:"38px",padding:"0 8px",border:"1px solid #ddd",boxSizing:"border-box",borderRadius:"6px",backgroundColor:"#fff",color:"#94a3b8",fontSize:"14px",fontFamily:"Poppins",lineHeight:"38px",outline:"none", cursor: disabled ? "not-allowed" : "text"}; return <input style={s} type="date" value={value||""} onChange={e=>onChange(e.target.value)} disabled={disabled}/>; }
 function InputFechaDevolucion({ value, onChange, disabled }) { const s={display:"block",margin:"0 auto",width:"311px",height:"36px",padding:"0 8px",border:"1px solid #ddd",boxSizing:"border-box",borderRadius:"6px",backgroundColor:"#fff",color:"#94a3b8",fontSize:"14px",fontFamily:"Poppins",lineHeight:"36px",outline:"none", cursor: disabled ? "not-allowed" : "text"}; return <input type="datetime-local" style={s} value={value||""} onChange={e=>onChange(e.target.value)} disabled={disabled}/>; }
 
-// --- Modal Selección Almacén (Original) ---
-function SubnivelItem({ pathSoFar, nivel, selectedPath, setSelectedPath }) { const cP=[...pathSoFar,nivel.nombre]; const pS=cP.join(" / "); const hC=()=>setSelectedPath(pS); const iS=pS===selectedPath; const iSt={margin:"8px 0",padding:"6px 8px",border:"1px solid #ccc",borderRadius:"4px",cursor:"pointer",backgroundColor:iS?"#bdf7ce":"#f5f5f5",fontWeight:iS?700:400,transition:"all .2s ease"}; return(<div style={{marginLeft:12,marginBottom:8}}><div style={iSt} onClick={hC}>{nivel.nombre}</div>{nivel.subniveles?.map(sub=>(<SubnivelItem key={sub.id} pathSoFar={cP} nivel={sub} selectedPath={selectedPath} setSelectedPath={setSelectedPath}/>))}</div>); }
-function ModalSeleccionAlmacen({ isOpen, onClose, almacenes, onSeleccionUbicacion }) { const[s,setS]=useState(1); const[sA,setSA]=useState(null); const[e,setE]=useState([]); const[sP,setSP]=useState(""); const[t]=useState(localStorage.getItem("token")); useEffect(()=>{isOpen&&(setS(1),setSA(null),setE([]),setSP(""))},[isOpen]); const hK=()=>onClose(); const vE=async a=>{try{const r=await fetch(`${BASE_URL}/auditoria/${a.id}`,{headers:{Authorization:`Bearer ${t}`}}); if(!r.ok)throw new Error("Error"); const d=await r.json(); setSA(a); setSP(a.nombre); setE(d.estructura||[]); setS(2)}catch(r){console.error(r); alert("Error carga estructura")};}; const hV=()=>{setS(1); setSA(null); setE([]); setSP("")}; const hGU=()=>{if(!sP)return alert("No seleccionado."); onSeleccionUbicacion(sP); onClose()}; if(!isOpen)return null; return(<div style={modalOverlayStyles} onClick={hK}><div style={modalContentStyles} onClick={e=>e.stopPropagation()}>{s===1&&(<> <h3 style={{marginBottom:12}}>Selecciona Almacén</h3> {almacenes.length===0?<p>No hay</p>:almacenes.map(a=>(<button key={a.id} style={{...btnGreen,width:"100%"}} onClick={()=>vE(a)}>{a.nombre}</button>))} <button style={btnGrey} onClick={hK}>Cancelar</button></>)}{s===2&&(<> <h3 style={{marginBottom:8}}>Estructura: {sA?.nombre}</h3> <div style={{fontSize:14,marginBottom:12,color:"#666"}}>Subniveles</div> <div style={{marginBottom:16}}>{e.length===0?<p style={{color:"#999"}}>Vacío.</p>:e.map(n=>(<SubnivelItem key={n.id} pathSoFar={[sA?.nombre||""]} nivel={n} selectedPath={sP} setSelectedPath={setSP}/>))}</div> <div style={{display:"flex",flexDirection:"column",gap:8}}> <button style={{...btnGreen,width:"100%"}} onClick={hGU}>Guardar Ubicación</button> <div style={{display:"flex",gap:8}}> <button style={{...btnGrey,flex:1}} onClick={hV}>Volver</button> <button style={{...btnGrey,flex:1}} onClick={hK}>Cancelar</button></div></div></>)}</div></div>); }
+// --- Modal Selección Almacén (Modificado) ---
+function SubnivelItem({ pathSoFar, nivel, selectedPath, setSelectedPath }) { 
+    // Crear la ruta completa incluyendo el nivel actual
+    const cP = [...pathSoFar, nivel.nombre]; 
+    // Unir la ruta con separador "/"
+    const pS = cP.join(" / "); 
+    // Handler para seleccionar esta ruta
+    const hC = () => setSelectedPath(pS); 
+    // Verificar si esta ruta es la seleccionada
+    const iS = pS === selectedPath; 
+    // Estilos para el ítem
+    const iSt = {
+        margin: "8px 0",
+        padding: "6px 8px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        cursor: "pointer",
+        backgroundColor: iS ? "#bdf7ce" : "#f5f5f5",
+        fontWeight: iS ? 700 : 400,
+        transition: "all .2s ease"
+    }; 
+    
+    return (
+        <div style={{marginLeft: 12, marginBottom: 8}}>
+            <div style={iSt} onClick={hC}>{nivel.nombre}</div>
+            {nivel.subniveles?.map(sub => (
+                <SubnivelItem 
+                    key={sub.id} 
+                    pathSoFar={cP} 
+                    nivel={sub} 
+                    selectedPath={selectedPath} 
+                    setSelectedPath={setSelectedPath}
+                />
+            ))}
+        </div>
+    ); 
+}
+
+function ModalSeleccionAlmacen({ isOpen, onClose, almacenes, onSeleccionUbicacion }) { 
+    const [s, setS] = useState(1); 
+    const [sA, setSA] = useState(null); 
+    const [e, setE] = useState([]); 
+    const [sP, setSP] = useState(""); 
+    const [t] = useState(localStorage.getItem("token")); 
+    
+    useEffect(() => {
+        if (isOpen) {
+            setS(1);
+            setSA(null);
+            setE([]);
+            setSP("");
+        }
+    }, [isOpen]); 
+    
+    const hK = () => onClose(); 
+    
+    const vE = async a => {
+        try {
+            const r = await fetch(`${BASE_URL}/auditoria/${a.id}`, {
+                headers: {Authorization: `Bearer ${t}`}
+            }); 
+            if (!r.ok) throw new Error("Error"); 
+            const d = await r.json(); 
+            setSA(a); 
+            // Inicializar la ruta con el nombre de la bodega
+            setSP(a.nombre); 
+            setE(d.estructura || []); 
+            setS(2);
+        } catch (r) {
+            console.error(r); 
+            alert("Error carga estructura");
+        }
+    }; 
+    
+    const hV = () => {
+        setS(1); 
+        setSA(null); 
+        setE([]); 
+        setSP("");
+    }; 
+    
+    const hGU = () => {
+        if (!sP) return alert("No seleccionado."); 
+        // Asegurarnos de que la ruta completa se pasa al componente padre
+        onSeleccionUbicacion(sP); 
+        onClose();
+    }; 
+    
+    if (!isOpen) return null; 
+    
+    return (
+        <div style={modalOverlayStyles} onClick={hK}>
+            <div style={modalContentStyles} onClick={e => e.stopPropagation()}>
+                {s === 1 && (
+                    <> 
+                        <h3 style={{marginBottom: 12}}>Selecciona Almacén</h3> 
+                        {almacenes.length === 0 ? 
+                            <p>No hay almacenes disponibles</p> : 
+                            almacenes.map(a => (
+                                <button 
+                                    key={a.id} 
+                                    style={{...btnGreen, width: "100%", marginBottom: "8px"}} 
+                                    onClick={() => vE(a)}
+                                >
+                                    {a.nombre}
+                                </button>
+                            ))
+                        } 
+                        <button style={btnGrey} onClick={hK}>Cancelar</button>
+                    </>
+                )}
+                {s === 2 && (
+                    <> 
+                        <h3 style={{marginBottom: 8}}>Estructura: {sA?.nombre}</h3> 
+                        <div style={{fontSize: 14, marginBottom: 12, color: "#666"}}>Subniveles</div> 
+                        <div style={{marginBottom: 16}}>
+                            {e.length === 0 ? 
+                                <p style={{color: "#999"}}>No hay subniveles disponibles.</p> : 
+                                e.map(n => (
+                                    <SubnivelItem 
+                                        key={n.id} 
+                                        pathSoFar={[sA?.nombre || ""]} 
+                                        nivel={n} 
+                                        selectedPath={sP} 
+                                        setSelectedPath={setSP}
+                                    />
+                                ))
+                            }
+                        </div> 
+                        <div style={{display: "flex", flexDirection: "column", gap: 8}}> 
+                            <button style={{...btnGreen, width: "100%"}} onClick={hGU}>Guardar Ubicación</button> 
+                            <div style={{display: "flex", gap: 8}}> 
+                                <button style={{...btnGrey, flex: 1}} onClick={hV}>Volver</button> 
+                                <button style={{...btnGrey, flex: 1}} onClick={hK}>Cancelar</button>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    ); 
+}
 
 // --- Historial Card y Textos (Originales) ---
 function CardHistorial({ children }) { const style = { width: "311px", margin:"0 auto", minHeight: "52px", backgroundColor: "#ffffff", borderRadius: "2px", boxShadow: "0px 4px 6px rgba(0,0,0,0.1)", marginBottom: "12px", padding:"8px" }; return <div style={style}>{children}</div>; }
@@ -217,7 +356,11 @@ export default function PrestamoDevolucion() {
     setIsLoading(true);
 
     // Historial con USERNAME
-    const nuevaEntrada = { fecha: new Date().toISOString(), accion: `${accion} por ${userInfo.username}` }; // <-- USERNAME
+    const nuevaEntrada = { 
+      fecha: new Date().toISOString(), 
+      accion: `${accion} por ${userInfo.username}`,
+      nombre_usuario_accion: userInfo.name || userInfo.username  // <-- Añadido nombre completo
+    };
     const currentHistorial = Array.isArray(bolsa.historial) ? bolsa.historial : [];
     const validCurrentHistorial = currentHistorial.filter(h => typeof h === 'object' && h !== null && typeof h.fecha === 'string' && typeof h.accion === 'string'); // Filtrar inválidos
     const updatedHistorial = [nuevaEntrada, ...validCurrentHistorial];
@@ -227,16 +370,26 @@ export default function PrestamoDevolucion() {
     const ubicacionActualJoin = [bolsa.area_general, bolsa.pasillo, bolsa.estante_nivel, bolsa.anden].filter(Boolean).join(' / ');
     if (accion === 'devuelto' && nuevaUbicacion && nuevaUbicacion !== ubicacionActualJoin) {
         const partes = nuevaUbicacion.split(' / ').map(p => p.trim());
-        area_general_p = partes[1] || null; pasillo_p = partes[2] || null; estante_p = partes[3] || null; anden_p = partes[4] || null;
+        area_general_p = partes[0] || null; pasillo_p = partes[1] || null; estante_p = partes[2] || null; anden_p = partes[3] || null;
     } else if (accion === 'prestado') { /* No cambia ubicación */ }
 
      // Items del estado local 'items'
      const itemsForPayload = items.map(it => ({ descripcion:it.descripcion||"", cantidad:it.cantidad===""||isNaN(Number(it.cantidad))?0:Number(it.cantidad), estado:it.estado||"Buen estado", comentario:it.comentario||"", photo_filename:it.photo_filename||null, }));
 
     const payload = {
-      id: bolsa.id.trim(), estado: nuevoEstado, area_general: area_general_p, pasillo: pasillo_p, estante_nivel: estante_p, anden: anden_p,
-      cliente_asignado: bolsa.cliente_asignado || null, notas_internas: bolsa.notas_internas || null, fecha_mantenimiento: bolsa.fecha_mantenimiento || null,
-      fecha_devolucion: fechaDevolucionPayload, items: itemsForPayload, historial: updatedHistorial,
+      id: bolsa.id.trim(), 
+      estado: nuevoEstado, 
+      area_general: area_general_p, 
+      pasillo: pasillo_p, 
+      estante_nivel: estante_p, 
+      anden: anden_p,
+      ubicacion_completa: nuevaUbicacion || ubicacionActualJoin, // Añadimos la ubicación completa
+      cliente_asignado: bolsa.cliente_asignado || null, 
+      notas_internas: bolsa.notas_internas || null, 
+      fecha_mantenimiento: bolsa.fecha_mantenimiento || null,
+      fecha_devolucion: fechaDevolucionPayload, 
+      items: itemsForPayload, 
+      historial: updatedHistorial,
     };
 
     try {
@@ -300,12 +453,37 @@ export default function PrestamoDevolucion() {
             <InputClienteAsignado value={memberQuery} onChange={(e)=>setMemberQuery(e.target.value)} disabled={isFormDisabled}/>
             {memberQuery&&memberOptions.length>0&&(<div style={{border:"1px solid #ccc",maxHeight:150,overflowY:"auto",marginBottom:16,margin:"0 auto",width:"311px"}}>{memberOptions.map(m=>(<div key={m.ClubMemberCode} style={{padding:8,cursor:"pointer",backgroundColor:memberInfo?.ClubMemberCode===m.ClubMemberCode?"#eef":"#fff"}} onClick={()=>handleSelectMember(m)}>{m.FirstName} {m.LastName} ({m.ClubMemberCode})</div>))}</div>)}
 
-            {/* Ubicación (Original + Input Restaurado) */}
+            {/* Ubicación (Mostrando ruta completa) */}
             <TextUbicacionActual />
-            <InputUbicacionActual value={[bolsa.area_general, bolsa.pasillo, bolsa.estante_nivel, bolsa.anden].filter(Boolean).join(' / ') || 'Sin ubicación'} />
+            <div style={{ 
+                width: "311px", 
+                minHeight: "40px", 
+                border: "1px solid #ccc", 
+                borderRadius: "6px", 
+                padding: "8px 12px", 
+                backgroundColor: "#f9f9f9", 
+                margin: "0 auto 12px auto",
+                display: "flex",
+                alignItems: "center"
+            }}>
+                {[bolsa.area_general, bolsa.pasillo, bolsa.estante_nivel, bolsa.anden].filter(Boolean).join(' / ') || 'Sin ubicación'}
+            </div>
+
             <TextNuevaUbicacion />
-            <InputNuevaUbicacion value={nuevaUbicacion} onChange={(e) => setNuevaUbicacion(e.target.value)} disabled={isFormDisabled} /> {/* <-- Input Restaurado */}
-             <div style={{ textAlign: "center", marginTop: "8px" }}>
+            <div style={{ 
+                width: "311px", 
+                minHeight: "40px", 
+                border: "1px solid #ccc", 
+                borderRadius: "6px", 
+                padding: "8px 12px", 
+                backgroundColor: "#fff", 
+                margin: "0 auto 12px auto",
+                display: "flex",
+                alignItems: "center"
+            }}>
+                {nuevaUbicacion || 'Selecciona...'}
+            </div>
+            <div style={{ textAlign: "center", marginTop: "8px" }}>
               <button style={{ width:"311px", height:"40px", border:"none", borderRadius:"6px", backgroundColor:"#16c76c", color:"#fff", fontWeight:700, fontFamily:"Poppins", cursor:isFormDisabled?'not-allowed':'pointer', opacity: isFormDisabled?0.6:1 }} onClick={handleOpenModal} disabled={isFormDisabled}>
                 Seleccionar Ubicación Bodega
               </button>
@@ -361,7 +539,6 @@ export default function PrestamoDevolucion() {
         </div>
       )}
       {/* --- Fin Visualización Historial --- */}
-
 
       {/* Modales */}
       {modalOpen && (<ModalSeleccionAlmacen isOpen={modalOpen} onClose={()=>setModalOpen(!1)} almacenes={almacenes} onSeleccionUbicacion={handleSeleccionUbicacion}/>)}
@@ -419,8 +596,42 @@ const styles = {
 // --- Componente Auxiliar para Historial (Modificado para usar nombre_usuario_accion) ---
 function HistoryDisplay({ historial, userInfo }) { // userInfo se mantiene por si el backend no envía nombre
   if (!Array.isArray(historial) || historial.length === 0) { return <TextSinTransacciones />; }
+  
+  // Construir mapa de usernames a nombres completos
+  const usernameMap = {};
+  historial.forEach(h => {
+      const orig = h.accion || "";
+      const porIndex = orig.lastIndexOf(" por ");
+      if (porIndex > -1 && h.nombre_usuario_accion) {
+          const username = orig.substring(porIndex + 5).trim();
+          if (username && !username.includes(" ")) {
+              usernameMap[username] = h.nombre_usuario_accion;
+          }
+      }
+  });
+  
+  // Enriquecer los datos con el mapa de usuarios
+  const enrichedHistorial = historial.map(h => {
+      if (!h.nombre_usuario_accion) {
+          const orig = h.accion || "";
+          const porIndex = orig.lastIndexOf(" por ");
+          if (porIndex > -1) {
+              const username = orig.substring(porIndex + 5).trim();
+              if (username && usernameMap[username]) {
+                  return {...h, nombre_usuario_accion: usernameMap[username]};
+              }
+          }
+      }
+      return h;
+  });
+  
   // Ordenación (asumiendo fechas ISO o locale)
-  const sortedHistorial = [...historial].sort((a, b) => { const parseDate=(s)=>{try{return new Date(String(s).replace('Z','+00:00')).getTime()}catch{try{const p=String(s).split(', '); const dP=p[0].split('/'); const tP=p[1].split(':'); return new Date(Date.UTC(parseInt(dP[2]),parseInt(dP[1])-1,parseInt(dP[0]),parseInt(tP[0]),parseInt(tP[1]),parseInt(tP[2]))).getTime()}catch{return NaN}}}; const dA=parseDate(a?.fecha); const dB=parseDate(b?.fecha); return(isNaN(dB)?-Infinity:dB)-(isNaN(dA)?-Infinity:dA); });
+  const sortedHistorial = [...enrichedHistorial].sort((a, b) => { 
+    const parseDate=(s)=>{try{return new Date(String(s).replace('Z','+00:00')).getTime()}catch{try{const p=String(s).split(', '); const dP=p[0].split('/'); const tP=p[1].split(':'); return new Date(Date.UTC(parseInt(dP[2]),parseInt(dP[1])-1,parseInt(dP[0]),parseInt(tP[0]),parseInt(tP[1]),parseInt(tP[2]))).getTime()}catch{return NaN}}}; 
+    const dA=parseDate(a?.fecha); 
+    const dB=parseDate(b?.fecha); 
+    return(isNaN(dB)?-Infinity:dB)-(isNaN(dA)?-Infinity:dA); 
+  });
 
   return (
     <>
@@ -448,6 +659,3 @@ function HistoryDisplay({ historial, userInfo }) { // userInfo se mantiene por s
   );
 }
 // --- Fin Componente Auxiliar ---
-
-// Placeholder Screen
-// if (typeof Screen === 'undefined') { const Screen = ({ children }) => <div style={{backgroundColor: '#f0f2f5', minHeight: '100vh'}}>{children}</div>; }

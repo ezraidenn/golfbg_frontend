@@ -80,8 +80,36 @@ function HistoryDisplay({ historial, userInfo }) { // Mantenemos userInfo como f
         return <p style={styles.detailText}>Sin historial de movimientos.</p>;
     }
 
+    // Construir mapa de usernames a nombres completos
+    const usernameMap = {};
+    historial.forEach(h => {
+        // Si tiene nombre_usuario_accion y podemos extraer el username
+        const orig = h.accion || "";
+        const porIndex = orig.lastIndexOf(" por ");
+        if (porIndex > -1 && h.nombre_usuario_accion) {
+            const username = orig.substring(porIndex + 5).trim();
+            // Solo si el username no tiene espacios (para evitar confusiones)
+            if (username && !username.includes(" ")) {
+                usernameMap[username] = h.nombre_usuario_accion;
+            }
+        }
+    });
+
+    // Enriquecer los datos con el mapa de usuarios
+    const enrichedHistorial = historial.map(h => {
+        const orig = h.accion || "";
+        const porIndex = orig.lastIndexOf(" por ");
+        if (porIndex > -1 && !h.nombre_usuario_accion) {
+            const username = orig.substring(porIndex + 5).trim();
+            if (username && usernameMap[username]) {
+                return {...h, nombre_usuario_accion: usernameMap[username]};
+            }
+        }
+        return h;
+    });
+
     // Ordenar por fecha (sin cambios)
-    const sortedHistorial = [...historial].sort((a, b) => {
+    const sortedHistorial = [...enrichedHistorial].sort((a, b) => {
         const parseDate = (str) => { try { const dt=new Date(String(str).replace('Z','+00:00')); if(isNaN(dt.getTime())) throw Error(); return dt.getTime(); } catch { try { const p=String(str).split(', '); const dP=p[0].split('/'); const tP=p[1].split(':'); const dt=new Date(Date.UTC(parseInt(dP[2]),parseInt(dP[1])-1,parseInt(dP[0]),parseInt(tP[0]),parseInt(tP[1]),parseInt(tP[2]))); if(isNaN(dt.getTime())) throw Error(); return dt.getTime(); } catch { return NaN; } } };
         const dateA = parseDate(a?.fecha); const dateB = parseDate(b?.fecha);
         return (isNaN(dateB) ? -Infinity : dateB) - (isNaN(dateA) ? -Infinity : dateA);
