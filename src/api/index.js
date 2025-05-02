@@ -113,3 +113,103 @@ export async function updateUserProfile(data) {
 
   return response.json();
 }
+
+// Funciones para el manejo del checklist
+export async function fetchChecklist() {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No hay token");
+
+  const response = await fetch(getApiEndpoint('/checklist'), {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("loggedIn");
+      window.location.href = "/login";
+      throw new Error("Sesión expirada");
+    }
+    throw new Error(`Error ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createChecklistItem(taskData) {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No hay token");
+
+  const response = await fetch(getApiEndpoint('/checklist'), {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(taskData)
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("loggedIn");
+      window.location.href = "/login";
+      throw new Error("Sesión expirada");
+    }
+    throw new Error(`Error ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateChecklistItem(taskId, taskData) {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No hay token");
+
+  const response = await fetch(getApiEndpoint(`/checklist/${taskId}`), {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(taskData)
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("loggedIn");
+      window.location.href = "/login";
+      throw new Error("Sesión expirada");
+    }
+    throw new Error(`Error ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteChecklistItem(taskId) {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No hay token");
+
+  const response = await fetch(getApiEndpoint(`/checklist/${taskId}`), {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("loggedIn");
+      window.location.href = "/login";
+      throw new Error("Sesión expirada");
+    }
+    throw new Error(`Error ${response.status}`);
+  }
+
+  return true;
+}
