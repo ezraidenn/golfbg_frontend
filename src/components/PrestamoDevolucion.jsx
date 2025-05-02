@@ -17,42 +17,451 @@ function formatDate(dateString) { if(!dateString) return "N/A"; try { const dt =
 
 
 // --- Estilos Base Globales ---
-const buttonBase = { border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: 700, fontFamily: "Poppins", fontSize: "14px", padding: "8px 16px", };
-const btnGrey = { ...buttonBase, backgroundColor: "#ccc", color: "#000" };
-const btnGreen = { ...buttonBase, backgroundColor: "#16c76c", color: "#fff", marginBottom: "12px" };
-const modalOverlayStyles = { position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999, };
-const modalContentStyles = { width: "90%", maxWidth: "380px", maxHeight: "80vh", overflowY: "auto", backgroundColor: "#ffffff", borderRadius: "8px", padding: "16px", boxSizing: "border-box", fontFamily: "Poppins", };
-const warningOverlayStyle = { position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(0,0,0,0.6)", zIndex: 10000, display: "flex", justifyContent: "center", alignItems: "center" };
-const warningModalStyle = { backgroundColor: "#fff", borderRadius: "8px", padding: "24px", width: "320px", maxWidth: "90%", boxShadow: "0 4px 8px rgba(0,0,0,0.2)", textAlign: "center", fontFamily: "Poppins, sans-serif" };
-const warningTitleStyle = { fontSize: "20px", fontWeight: "700", marginBottom: "16px", color: "#FF0000" };
-const warningButtonContainerStyle = { display: "flex", gap: "12px", justifyContent: "center", marginTop: "24px", flexWrap: "wrap" };
-const warningIgnoreButtonStyle = { ...buttonBase, backgroundColor: "#16c76c", color: "#fff", padding: '8px 16px', height: 'auto' };
-const warningCancelButtonStyle = { ...buttonBase, backgroundColor: "#ff2d55", color: "#fff", padding: '8px 16px', height: 'auto' };
+const buttonBase = { 
+  border: "none", 
+  borderRadius: "8px", 
+  cursor: "pointer", 
+  fontWeight: 600, 
+  fontFamily: "Poppins", 
+  fontSize: "14px", 
+  padding: "10px 16px",
+  transition: "all 0.2s ease",
+  boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+};
+const btnGrey = { 
+  ...buttonBase, 
+  backgroundColor: "#f1f5f9", 
+  color: "#475569" 
+};
+const btnGreen = { 
+  ...buttonBase, 
+  backgroundColor: "#10b981", 
+  color: "#fff", 
+  marginBottom: "12px",
+  "&:hover": {
+    backgroundColor: "#059669"
+  }
+};
+const modalOverlayStyles = { 
+  position: "fixed", 
+  top: 0, 
+  left: 0, 
+  width: "100vw", 
+  height: "100vh", 
+  backgroundColor: "rgba(0,0,0,0.6)", 
+  backdropFilter: "blur(3px)",
+  display: "flex", 
+  justifyContent: "center", 
+  alignItems: "center", 
+  zIndex: 9999 
+};
+const modalContentStyles = { 
+  width: "90%", 
+  maxWidth: "380px", 
+  maxHeight: "80vh", 
+  overflowY: "auto", 
+  backgroundColor: "#ffffff", 
+  borderRadius: "12px", 
+  padding: "20px", 
+  boxSizing: "border-box", 
+  fontFamily: "Poppins",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+};
+const warningOverlayStyle = { 
+  position: "fixed", 
+  top: 0, 
+  left: 0, 
+  width: "100vw", 
+  height: "100vh", 
+  backgroundColor: "rgba(0,0,0,0.6)", 
+  backdropFilter: "blur(3px)",
+  zIndex: 10000, 
+  display: "flex", 
+  justifyContent: "center", 
+  alignItems: "center" 
+};
+const warningModalStyle = { 
+  backgroundColor: "#fff", 
+  borderRadius: "12px", 
+  padding: "24px", 
+  width: "320px", 
+  maxWidth: "90%", 
+  boxShadow: "0 10px 25px rgba(0,0,0,0.2)", 
+  textAlign: "center", 
+  fontFamily: "Poppins, sans-serif" 
+};
+const warningTitleStyle = { 
+  fontSize: "22px", 
+  fontWeight: "700", 
+  marginBottom: "16px", 
+  color: "#ef4444" 
+};
+const warningButtonContainerStyle = { 
+  display: "flex", 
+  gap: "12px", 
+  justifyContent: "center", 
+  marginTop: "24px", 
+  flexWrap: "wrap" 
+};
+const warningIgnoreButtonStyle = { 
+  ...buttonBase, 
+  backgroundColor: "#10b981", 
+  color: "#fff", 
+  padding: '10px 16px', 
+  height: 'auto' 
+};
+const warningCancelButtonStyle = { 
+  ...buttonBase, 
+  backgroundColor: "#ef4444", 
+  color: "#fff", 
+  padding: '10px 16px', 
+  height: 'auto' 
+};
 // --- Fin Estilos Base ---
 
-// Componente MainCard (Original)
-function MainCard({ children }) { const style = { position:"relative", width:"100%", maxWidth:"343px", minHeight:"400px", margin:"24px auto", backgroundColor:"#fff", borderRadius:"2px", boxShadow:"0 4px 6px rgba(0,0,0,.1)", paddingBottom:"20px" }; return <div style={style}>{children}</div>; }
+// Componente MainCard (Mejorado)
+function MainCard({ children }) { 
+  const style = { 
+    position: "relative", 
+    width: "100%", 
+    maxWidth: "380px", 
+    minHeight: "400px", 
+    margin: "24px auto", 
+    backgroundColor: "#fff", 
+    borderRadius: "12px", 
+    boxShadow: "0 8px 20px rgba(0,0,0,.08)", 
+    paddingBottom: "24px",
+    overflow: "hidden"
+  }; 
+  return <div style={style}>{children}</div>; 
+}
 
-// Componentes Texto (Originales)
-function TextEstadoBolsa() { const s={margin:"16px 0 4px 32px",color:"#030303",fontSize:"14px",fontFamily:"Poppins",fontWeight:700,lineHeight:"20px"}; return <div style={s}>Estado de la Bolsa</div>; }
-function TextClienteAsignado() { const s={margin:"16px 0 4px 32px",color:"#030303",fontSize:"14px",fontFamily:"Poppins",fontWeight:700,lineHeight:"20px"}; return <div style={s}>Miembro Asignado</div>; }
-function TextUbicacionActual() { const s={margin:"16px 0 4px 32px",color:"#030303",fontSize:"14px",fontFamily:"Poppins",fontWeight:700,lineHeight:"20px"}; return <div style={s}>Ubicación Actual</div>; }
-function TextNuevaUbicacion() { const s={margin:"16px 0 4px 32px",color:"#030303",fontSize:"14px",fontFamily:"Poppins",fontWeight:700,lineHeight:"20px"}; return <div style={s}>Nueva Ubicación</div>; }
-function TextNotasInternas() { const s={margin:"16px 0 4px 32px",color:"#030303",fontSize:"14px",fontFamily:"Poppins",fontWeight:700,lineHeight:"20px"}; return <div style={s}>Notas Internas</div>; }
-function TextFechaMantenimiento() { const s={margin:"16px 0 4px 32px",color:"#030303",fontSize:"14px",fontFamily:"Poppins",fontWeight:700,lineHeight:"20px"}; return <div style={s}>Fecha Mantenimiento</div>; }
-function TextFechaDevolucion() { const s={margin:"16px 0 4px 32px",color:"#030303",fontSize:"14px",fontFamily:"Poppins",fontWeight:700,lineHeight:"20px"}; return <div style={s}>Fecha Devolución</div>; }
-function TextItemsEnLaBolsa() { const s={margin:"16px 0 4px 32px",color:"#030303",fontSize:"14px",fontFamily:"Poppins",fontWeight:700,lineHeight:"20px"}; return <div style={s}>Ítems en la Bolsa</div>; }
-function TextHistorialMovimientos() { const s={color:"#030303",fontSize:"18px",fontFamily:"Poppins",fontWeight:700,lineHeight:"28px",marginTop:"16px",marginBottom:"8px",textAlign:"center"}; return <div style={s}>Historial de Movimientos</div>; }
-function TextSinTransacciones() { const s={color:"#94a3b8",fontSize:"14px",fontFamily:"Poppins",lineHeight:"20px",textAlign:"center",marginTop:"8px"}; return <div style={s}>No hay transacciones previas</div>; }
+// Componentes Texto (Mejorados)
+function TextEstadoBolsa() { 
+  const s = {
+    margin: "20px 0 6px 32px",
+    color: "#1e293b",
+    fontSize: "15px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "20px"
+  }; 
+  return <div style={s}>Estado de la Bolsa</div>; 
+}
+function TextClienteAsignado() { 
+  const s = {
+    margin: "20px 0 6px 32px",
+    color: "#1e293b",
+    fontSize: "15px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "20px"
+  }; 
+  return <div style={s}>Miembro Asignado</div>; 
+}
+function TextUbicacionActual() { 
+  const s = {
+    margin: "20px 0 6px 32px",
+    color: "#1e293b",
+    fontSize: "15px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "20px"
+  }; 
+  return <div style={s}>Ubicación Actual</div>; 
+}
+function TextNuevaUbicacion() { 
+  const s = {
+    margin: "20px 0 6px 32px",
+    color: "#1e293b",
+    fontSize: "15px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "20px"
+  }; 
+  return <div style={s}>Nueva Ubicación</div>; 
+}
+function TextNotasInternas() { 
+  const s = {
+    margin: "20px 0 6px 32px",
+    color: "#1e293b",
+    fontSize: "15px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "20px"
+  }; 
+  return <div style={s}>Notas Internas</div>; 
+}
+function TextFechaMantenimiento() { 
+  const s = {
+    margin: "20px 0 6px 32px",
+    color: "#1e293b",
+    fontSize: "15px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "20px"
+  }; 
+  return <div style={s}>Fecha Mantenimiento</div>; 
+}
+function TextFechaDevolucion() { 
+  const s = {
+    margin: "20px 0 6px 32px",
+    color: "#1e293b",
+    fontSize: "15px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "20px"
+  }; 
+  return <div style={s}>Fecha Devolución</div>; 
+}
+function TextItemsEnLaBolsa() { 
+  const s = {
+    margin: "20px 0 6px 32px",
+    color: "#1e293b",
+    fontSize: "15px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "20px"
+  }; 
+  return <div style={s}>Ítems en la Bolsa</div>; 
+}
+function TextHistorialMovimientos() { 
+  const s = {
+    color: "#1e293b",
+    fontSize: "20px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    lineHeight: "28px",
+    marginTop: "24px",
+    marginBottom: "12px",
+    textAlign: "center"
+  }; 
+  return <div style={s}>Historial de Movimientos</div>; 
+}
+function TextSinTransacciones() { 
+  const s = {
+    color: "#94a3b8",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    lineHeight: "20px",
+    textAlign: "center",
+    marginTop: "12px",
+    fontStyle: "italic"
+  }; 
+  return <div style={s}>No hay transacciones previas</div>; 
+}
 
-// Componentes Input (Originales)
-function InputEstadoBolsa({ value }) { let b="#f5f5f5"; value==="Disponible"&&(b="#ccffcc"); value==="En tránsito"&&(b="#ffcccc"); const s={display:"block",margin:"0 auto",width:"311px",height:"36px",padding:"0 8px",border:"1px solid #ddd",boxSizing:"border-box",borderRadius:"6px",backgroundColor:b,color:"#333",fontSize:"14px",fontFamily:"Poppins",lineHeight:"36px",outline:"none"}; return <input style={s} value={value} readOnly/>; }
-function InputClienteAsignado({ value, onChange, disabled }) { const s={display:"block",margin:"0 auto",width:"311px",height:"36px",padding:"0 8px",border:"1px solid #ddd",boxSizing:"border-box",borderRadius:"6px",backgroundColor:disabled?'#e9ecef':"#fff",color:"#94a3b8",fontSize:"14px",fontFamily:"Poppins",lineHeight:"36px",outline:"none", cursor:disabled?'not-allowed':'text'}; return <input style={s} placeholder="Buscar miembro..." value={value} onChange={onChange} disabled={disabled}/>; }
-function InputUbicacionActual({ value }) { const s={display:"block",margin:"0 auto",width:"311px",height:"36px",padding:"0 8px",border:"1px solid #ddd",boxSizing:"border-box",borderRadius:"6px",backgroundColor:"#f5f5f5",color:"#333",fontSize:"14px",fontFamily:"Poppins",lineHeight:"36px",outline:"none"}; return <input style={s} value={value} readOnly/>; }
-function InputNuevaUbicacion({ value, onChange, disabled }) { const s={display:"block",margin:"0 auto",width:"311px",height:"36px",padding:"0 8px",border:disabled?"1px solid #ddd":"1px solid #007700",boxSizing:"border-box",borderRadius:"6px",backgroundColor:disabled?"#f5f5f5":"#fff",color:"#94a3b8",fontSize:"14px",fontFamily:"Poppins",lineHeight:"36px",outline:"none", cursor:disabled?'not-allowed':'text'}; return <input style={s} placeholder="Ej. Bodega / Rack 5 / Nivel 2" value={value} onChange={onChange} disabled={disabled}/>; }
-function InputNotasInternas({ value, onChange, disabled }) { const s={display:"block",margin:"0 auto",width:"311px",height:"56px",padding:"8px",border:"1px solid #ddd",boxSizing:"border-box",borderRadius:"6px",backgroundColor:"#fff",color:"#94a3b8",fontSize:"14px",fontFamily:"Poppins",lineHeight:"20px",outline:"none", resize: disabled ? "none" : "vertical", cursor: disabled ? "not-allowed" : "text"}; return <textarea style={s} placeholder="Notas internas..." value={value} onChange={onChange} disabled={disabled}/>; }
-function InputFechaMantenimiento({ value, onChange, disabled }) { const s={display:"block",margin:"8px auto 0 auto",width:"311px",height:"38px",padding:"0 8px",border:"1px solid #ddd",boxSizing:"border-box",borderRadius:"6px",backgroundColor:"#fff",color:"#94a3b8",fontSize:"14px",fontFamily:"Poppins",lineHeight:"38px",outline:"none", cursor: disabled ? "not-allowed" : "text"}; return <input style={s} type="date" value={value||""} onChange={e=>onChange(e.target.value)} disabled={disabled}/>; }
-function InputFechaDevolucion({ value, onChange, disabled }) { const s={display:"block",margin:"0 auto",width:"311px",height:"36px",padding:"0 8px",border:"1px solid #ddd",boxSizing:"border-box",borderRadius:"6px",backgroundColor:"#fff",color:"#94a3b8",fontSize:"14px",fontFamily:"Poppins",lineHeight:"36px",outline:"none", cursor: disabled ? "not-allowed" : "text"}; return <input type="datetime-local" style={s} value={value||""} onChange={e=>onChange(e.target.value)} disabled={disabled}/>; }
+// Componentes Input (Mejorados)
+function InputEstadoBolsa({ value }) { 
+  let bgColor = "#f8fafc"; 
+  let textColor = "#475569";
+  let borderColor = "#e2e8f0";
+  
+  if (value === "Disponible") {
+    bgColor = "#dcfce7";
+    textColor = "#166534";
+    borderColor = "#bbf7d0";
+  } else if (value === "En tránsito") {
+    bgColor = "#fee2e2";
+    textColor = "#b91c1c";
+    borderColor = "#fecaca";
+  }
+  
+  const s = {
+    display: "block",
+    margin: "0 auto",
+    width: "311px",
+    height: "40px",
+    padding: "0 12px",
+    border: `1px solid ${borderColor}`,
+    boxSizing: "border-box",
+    borderRadius: "8px",
+    backgroundColor: bgColor,
+    color: textColor,
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    lineHeight: "40px",
+    outline: "none",
+    fontWeight: 500,
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  }; 
+  
+  return <input style={s} value={value} readOnly/>; 
+}
+
+function InputClienteAsignado({ value, onChange, disabled }) { 
+  const s = {
+    display: "block",
+    margin: "0 auto",
+    width: "311px",
+    height: "40px",
+    padding: "0 12px",
+    border: "1px solid #e2e8f0",
+    boxSizing: "border-box",
+    borderRadius: "8px",
+    backgroundColor: disabled ? '#f1f5f9' : "#fff",
+    color: "#64748b",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    lineHeight: "40px",
+    outline: "none", 
+    cursor: disabled ? 'not-allowed' : 'text',
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  }; 
+  
+  return <input 
+    style={s} 
+    placeholder="Buscar miembro..." 
+    value={value} 
+    onChange={onChange} 
+    disabled={disabled}
+  />; 
+}
+
+function InputUbicacionActual({ value }) { 
+  const s = {
+    display: "block",
+    margin: "0 auto",
+    width: "311px",
+    height: "40px",
+    padding: "0 12px",
+    border: "1px solid #e2e8f0",
+    boxSizing: "border-box",
+    borderRadius: "8px",
+    backgroundColor: "#f8fafc",
+    color: "#475569",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    lineHeight: "40px",
+    outline: "none",
+    fontWeight: 500,
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  }; 
+  
+  return <input style={s} value={value} readOnly/>; 
+}
+
+function InputNuevaUbicacion({ value, onChange, disabled }) { 
+  const s = {
+    display: "block",
+    margin: "0 auto",
+    width: "311px",
+    height: "40px",
+    padding: "0 12px",
+    border: disabled ? "1px solid #e2e8f0" : "1px solid #10b981",
+    boxSizing: "border-box",
+    borderRadius: "8px",
+    backgroundColor: disabled ? "#f8fafc" : "#fff",
+    color: "#64748b",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    lineHeight: "40px",
+    outline: "none", 
+    cursor: disabled ? 'not-allowed' : 'text',
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  }; 
+  
+  return <input 
+    style={s} 
+    placeholder="Ej. Bodega / Rack 5 / Nivel 2" 
+    value={value} 
+    onChange={onChange} 
+    disabled={disabled}
+  />; 
+}
+
+function InputNotasInternas({ value, onChange, disabled }) { 
+  const s = {
+    display: "block",
+    margin: "0 auto",
+    width: "311px",
+    height: "80px",
+    padding: "10px 12px",
+    border: "1px solid #e2e8f0",
+    boxSizing: "border-box",
+    borderRadius: "8px",
+    backgroundColor: disabled ? "#f1f5f9" : "#fff",
+    color: "#64748b",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    lineHeight: "1.5",
+    outline: "none", 
+    resize: disabled ? "none" : "vertical", 
+    cursor: disabled ? "not-allowed" : "text",
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  }; 
+  
+  return <textarea 
+    style={s} 
+    placeholder="Notas internas..." 
+    value={value} 
+    onChange={onChange} 
+    disabled={disabled}
+  />; 
+}
+
+function InputFechaMantenimiento({ value, onChange, disabled }) { 
+  const s = {
+    display: "block",
+    margin: "8px auto 0 auto",
+    width: "311px",
+    height: "40px",
+    padding: "0 12px",
+    border: "1px solid #e2e8f0",
+    boxSizing: "border-box",
+    borderRadius: "8px",
+    backgroundColor: disabled ? "#f1f5f9" : "#fff",
+    color: "#64748b",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    lineHeight: "40px",
+    outline: "none", 
+    cursor: disabled ? "not-allowed" : "text",
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  }; 
+  
+  return <input 
+    style={s} 
+    type="date" 
+    value={value||""} 
+    onChange={e=>onChange(e.target.value)} 
+    disabled={disabled}
+  />; 
+}
+
+function InputFechaDevolucion({ value, onChange, disabled }) { 
+  const s = {
+    display: "block",
+    margin: "0 auto",
+    width: "311px",
+    height: "40px",
+    padding: "0 12px",
+    border: "1px solid #e2e8f0",
+    boxSizing: "border-box",
+    borderRadius: "8px",
+    backgroundColor: disabled ? "#f1f5f9" : "#fff",
+    color: "#64748b",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    lineHeight: "40px",
+    outline: "none", 
+    cursor: disabled ? "not-allowed" : "text",
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  }; 
+  
+  return <input 
+    type="datetime-local" 
+    style={s} 
+    value={value||""} 
+    onChange={e=>onChange(e.target.value)} 
+    disabled={disabled}
+  />; 
+}
 
 // --- Modal Selección Almacén (Modificado) ---
 function SubnivelItem({ pathSoFar, nivel, selectedPath, setSelectedPath }) { 
@@ -197,9 +606,37 @@ function ModalSeleccionAlmacen({ isOpen, onClose, almacenes, onSeleccionUbicacio
     ); 
 }
 
-// --- Historial Card y Textos (Originales) ---
-function CardHistorial({ children }) { const style = { width: "311px", margin:"0 auto", minHeight: "52px", backgroundColor: "#ffffff", borderRadius: "2px", boxShadow: "0px 4px 6px rgba(0,0,0,0.1)", marginBottom: "12px", padding:"8px" }; return <div style={style}>{children}</div>; }
-function TextHistorial({ text }) { const style = { color: "#030303", fontSize: "14px", fontFamily: "Poppins", lineHeight: "20px", margin: "8px" }; return <div style={style}>{text}</div>; }
+// --- Historial Card y Textos (Mejorados) ---
+function CardHistorial({ children }) { 
+  const style = { 
+    width: "100%", 
+    maxWidth: "340px",
+    margin: "0 auto 12px auto", 
+    minHeight: "52px", 
+    backgroundColor: "#ffffff", 
+    borderRadius: "10px", 
+    boxShadow: "0px 2px 8px rgba(0,0,0,0.06)", 
+    padding: "12px",
+    transition: "transform 0.2s ease",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0px 4px 12px rgba(0,0,0,0.1)"
+    }
+  }; 
+  return <div style={style}>{children}</div>; 
+}
+
+function TextHistorial({ text }) { 
+  const style = { 
+    color: "#334155", 
+    fontSize: "14px", 
+    fontFamily: "Poppins", 
+    lineHeight: "1.5", 
+    margin: "4px",
+    fontWeight: 400
+  }; 
+  return <div style={style}>{text}</div>; 
+}
 
 // --- ItemRow Modificado (con fotos) ---
 function ItemRow({
@@ -429,16 +866,51 @@ export default function PrestamoDevolucion() {
 
   return (
     // <Screen>
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", width:"100%", minHeight:"100vh", backgroundColor:"#f5f5f5", paddingBottom:"80px", fontFamily:"Poppins" }}>
+    <div style={{ 
+      display: "flex", 
+      flexDirection: "column", 
+      alignItems: "center", 
+      width: "100%", 
+      minHeight: "100vh", 
+      backgroundColor: "#f8fafc", 
+      paddingBottom: "80px", 
+      fontFamily: "Poppins"
+    }}>
       <MainCard>
-        <div style={{ textAlign: "center", marginTop: "16px" }}>
-          <button style={{ width: "311px", height: "40px", backgroundColor: "#0077cc", color: "#fff", border: "none", borderRadius: "6px", fontFamily: "Poppins", fontWeight: 700, cursor: isFormDisabled ? 'not-allowed' : 'pointer', opacity: isFormDisabled ? 0.6 : 1 }} onClick={() => !isFormDisabled && setShowQRScanner(true)} disabled={isFormDisabled}>
+        <div style={{ textAlign: "center", marginTop: "24px" }}>
+          <button 
+            style={{ 
+              width: "311px", 
+              height: "48px", 
+              backgroundColor: "#0ea5e9", 
+              color: "#fff", 
+              border: "none", 
+              borderRadius: "8px", 
+              fontFamily: "Poppins", 
+              fontWeight: 600, 
+              cursor: isFormDisabled ? 'not-allowed' : 'pointer', 
+              opacity: isFormDisabled ? 0.6 : 1,
+              boxShadow: "0 2px 5px rgba(14, 165, 233, 0.3)",
+              transition: "all 0.2s ease"
+            }} 
+            onClick={() => !isFormDisabled && setShowQRScanner(true)} 
+            disabled={isFormDisabled}
+          >
             {isFetchingBag ? 'Cargando...' : 'Escanear ID de Bolsa'}
           </button>
         </div>
 
-        {isFetchingBag && !bolsa && <div style={{textAlign:'center', padding: '20px', color:'#555'}}>Buscando bolsa...</div>}
-
+        {isFetchingBag && !bolsa && 
+          <div style={{
+            textAlign: 'center', 
+            padding: '30px', 
+            color: '#64748b',
+            fontSize: '15px',
+            fontStyle: 'italic'
+          }}>
+            Buscando bolsa...
+          </div>
+        }
         {bolsa && !isFetchingBag && (
           <>
             <TextEstadoBolsa />
@@ -484,14 +956,30 @@ export default function PrestamoDevolucion() {
                 {nuevaUbicacion || 'Selecciona...'}
             </div>
             <div style={{ textAlign: "center", marginTop: "8px" }}>
-              <button style={{ width:"311px", height:"40px", border:"none", borderRadius:"6px", backgroundColor:"#16c76c", color:"#fff", fontWeight:700, fontFamily:"Poppins", cursor:isFormDisabled?'not-allowed':'pointer', opacity: isFormDisabled?0.6:1 }} onClick={handleOpenModal} disabled={isFormDisabled}>
+              <button 
+                style={{ 
+                  width: "311px", 
+                  height: "48px", 
+                  backgroundColor: "#16c76c", 
+                  color: "#fff", 
+                  border: "none", 
+                  borderRadius: "8px", 
+                  fontFamily: "Poppins", 
+                  fontWeight: 600, 
+                  cursor: isFormDisabled ? 'not-allowed' : 'pointer', 
+                  opacity: isFormDisabled ? 0.6 : 1,
+                  boxShadow: "0 2px 5px rgba(22, 199, 108, 0.3)",
+                  transition: "all 0.2s ease"
+                }} 
+                onClick={handleOpenModal} 
+                disabled={isFormDisabled}
+              >
                 Seleccionar Ubicación Bodega
               </button>
-             </div>
-             {nuevaUbicacion && nuevaUbicacion !== [bolsa.area_general, bolsa.pasillo, bolsa.estante_nivel, bolsa.anden].filter(Boolean).join(' / ') &&
-                <p style={{fontSize: '12px', color: '#555', textAlign:'center', marginTop: '5px'}}>Nueva ubicación: {nuevaUbicacion}</p>
-             }
-
+            </div>
+            {nuevaUbicacion && nuevaUbicacion !== [bolsa.area_general, bolsa.pasillo, bolsa.estante_nivel, bolsa.anden].filter(Boolean).join(' / ') &&
+              <p style={{fontSize: '12px', color: '#555', textAlign:'center', marginTop: '5px'}}>Nueva ubicación: {nuevaUbicacion}</p>
+            }
 
             {/* Notas y Fechas (Originales) */}
             <TextNotasInternas />
@@ -518,7 +1006,30 @@ export default function PrestamoDevolucion() {
                 onImageClick={handleImageClick}
               />
             ))}
-            <button style={{ width:"311px", height:"40px", margin:"16px auto", display:"block", backgroundColor:isFormDisabled?'#a0aec0':"#0077cc", color:"#fff", border:"none", borderRadius:"6px", fontFamily:"Poppins", fontWeight:700, cursor:isFormDisabled?'not-allowed':"pointer", opacity: isFormDisabled?0.6:1 }} onClick={handleAgregarItem} disabled={isFormDisabled}> Agregar ítem </button>
+            <div style={{ textAlign: "center", margin: "16px auto" }}>
+              <button 
+                style={{ 
+                  width: "311px", 
+                  height: "48px", 
+                  backgroundColor: "#0077cc", 
+                  color: "#fff", 
+                  border: "none", 
+                  borderRadius: "8px", 
+                  fontFamily: "Poppins", 
+                  fontWeight: 600, 
+                  cursor: isFormDisabled ? 'not-allowed' : 'pointer', 
+                  opacity: isFormDisabled ? 0.6 : 1,
+                  boxShadow: "0 2px 5px rgba(0, 119, 204, 0.3)",
+                  transition: "all 0.2s ease",
+                  margin: "0 auto",
+                  display: "block"
+                }} 
+                onClick={handleAgregarItem} 
+                disabled={isFormDisabled}
+              >
+                Agregar ítem
+              </button>
+            </div>
             {/* --- Fin Renderizado Items --- */}
 
             {/* Botones de Acción (Sin lógica de disabled por estado) */}
@@ -526,16 +1037,25 @@ export default function PrestamoDevolucion() {
               <ButtonAccion onClick={handlePrestar} text="Prestar Bolsa" bgColor="#16c76c" disabled={isFormDisabled}/>
               <ButtonAccion onClick={handleDevolver} text="Devolver Bolsa" bgColor="#ff2d55" disabled={isFormDisabled}/>
             </div>
-             {isLoading && <div style={{textAlign: 'center', color: '#0077cc', marginTop: '10px'}}>Procesando...</div>}
+            {isLoading && <div style={{textAlign: 'center', color: '#0077cc', marginTop: '10px'}}>Procesando...</div>}
           </>
         )}
       </MainCard>
 
       {/* --- Visualización del Historial con Nombres --- */}
       {bolsa && !isFetchingBag && (
-        <div style={{ width: "311px", margin: "24px auto 0 auto" }}>
+        <div style={{ 
+          width: "100%", 
+          maxWidth: "380px", 
+          margin: "24px auto 0 auto",
+          padding: "0 15px",
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
+        }}>
           <TextHistorialMovimientos />
-           <HistoryDisplay historial={bolsa.historial} userInfo={userInfo} />
+          <HistoryDisplay historial={bolsa.historial} userInfo={userInfo} />
         </div>
       )}
       {/* --- Fin Visualización Historial --- */}
@@ -552,44 +1072,343 @@ export default function PrestamoDevolucion() {
   );
 }
 
-// --- Botón Acción (Modificado) ---
-function ButtonAccion({ onClick, text, bgColor, disabled }) { // Mantiene disabled
-  const style = { display:"block", margin:"16px auto", width:"311px", height:"52px", border:"none", boxSizing:"border-box", borderRadius:"2px", backgroundColor:disabled?'#ccc':bgColor, color:"#fff", fontSize:"18px", fontFamily:"Poppins", fontWeight:700, lineHeight:"28px", cursor:disabled?'not-allowed':"pointer", opacity: disabled?0.6:1 };
-  return ( <button style={style} onClick={onClick} disabled={disabled}> {text} </button> );
+// --- Botón Acción (Mejorado) ---
+function ButtonAccion({ onClick, text, bgColor, disabled }) {
+  // Determinar colores y sombras basados en el color de fondo
+  let shadowColor = bgColor;
+  if (bgColor === "#16c76c") {
+    shadowColor = "rgba(22, 199, 108, 0.3)";
+  } else if (bgColor === "#ff2d55") {
+    shadowColor = "rgba(255, 45, 85, 0.3)";
+  }
+  
+  const style = { 
+    display: "block", 
+    margin: "16px auto", 
+    width: "311px", 
+    height: "52px", 
+    border: "none", 
+    boxSizing: "border-box", 
+    borderRadius: "8px", 
+    backgroundColor: disabled ? '#94a3b8' : bgColor, 
+    color: "#fff", 
+    fontSize: "16px", 
+    fontFamily: "Poppins", 
+    fontWeight: 600, 
+    lineHeight: "28px", 
+    cursor: disabled ? 'not-allowed' : "pointer", 
+    opacity: disabled ? 0.7 : 1,
+    transition: "all 0.2s ease",
+    boxShadow: `0 2px 5px ${shadowColor}`,
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: `0 4px 8px ${shadowColor}`
+    }
+  };
+  
+  return (
+    <button style={style} onClick={onClick} disabled={disabled}>
+      {text}
+    </button>
+  );
 }
 
-// --- Estilos Completos (Restaurados) ---
+// --- Estilos Completos (Mejorados) ---
 const styles = {
-  memberCard:{width:"311px",backgroundColor:"#ecfdf5",border:"1px solid #d1fae5",borderRadius:"8px",padding:"12px",marginBottom:"16px",color:"#065f46",fontFamily:"Poppins",position:"relative",margin:"0 auto"},
-  memberHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:"14px",fontWeight:"700",marginBottom:"6px"},
-  deleteButton:{backgroundColor:"transparent",border:"none",color:"#ff2d55",fontWeight:"bold",cursor:"pointer",fontSize:"14px"},
-  memberTextTitle:{fontSize:"16px",fontWeight:"bold",marginBottom:"6px"},
-  memberText:{fontSize:"14px",marginBottom:"4px"},
-  histCard:{backgroundColor:"#f8f9fa",border:"1px solid #e9ecef",borderRadius:"4px",padding:"8px 12px",marginBottom:"8px", width: '100%', boxSizing: 'border-box'},
-  histText:{fontSize:"13px",margin:0,color:"#2c3e50",lineHeight:"1.5"},
-  subtleText:{fontSize:"11px",color:"#666",display:"inline-block",marginRight:"5px"},
-  itemRowStyle:{border:"1px solid #ddd",borderRadius:"6px",padding:"12px",marginBottom:"12px",backgroundColor:"#fff",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"},
-  itemLabelStyle:{display:"block",fontSize:"14px",fontFamily:"Poppins, sans-serif",fontWeight:600,marginBottom:"4px",color:"#333"},
-  itemInputBaseStyle:{width:"100%",padding:"8px",marginBottom:"10px",borderRadius:"4px",border:"1px solid #ccc",boxSizing:"border-box",fontSize:"14px",fontFamily:"Poppins, sans-serif",outline:"none"},
-  photoSectionStyle:{marginTop:"12px",paddingTop:"12px",borderTop:"1px dashed #eee"},
-  photoPreviewContainerStyle:{display:"flex",alignItems:"center",gap:"10px",minHeight:"50px",marginBottom:"10px"},
-  photoPreviewStyle:{maxWidth:"80px",maxHeight:"80px",height:"auto",borderRadius:"4px",border:"1px solid #ccc",objectFit:"cover",cursor:"pointer"},
-  noPhotoDivStyle:{width:"80px",height:"80px",backgroundColor:"#eee",borderRadius:"4px",display:"flex",alignItems:"center",justifyContent:"center",color:"#999",fontSize:"12px",textAlign:"center"},
-  photoButtonsContainerStyle:{display:"flex",flexDirection:"column",gap:"8px",flexGrow:1},
-  fileInputHiddenStyle:{display:"none"},
-  fileInputLabelBaseStyle:{display:"inline-block",padding:"8px 12px",color:"white",borderRadius:"4px",fontSize:"13px",fontWeight:600,transition:"background-color .2s ease, opacity .2s ease",textAlign:"center",border:"none"},
-  photoActionButtonBaseStyle:{padding:"6px 10px",fontSize:"12px",fontWeight:500,border:"none",borderRadius:"4px",transition:"background-color .2s ease, opacity .2s ease"},
-  photoStatusStyle:{fontSize:"12px",fontStyle:"italic",marginTop:"5px",color:"#666"},
-  photoErrorStyle:{fontSize:"12px",fontStyle:"italic",marginTop:"5px",color:"red",fontWeight:"bold"},
-  modalOverlayStyles: { position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999, },
-  modalContentStyles: { width: "90%", maxWidth: "380px", maxHeight: "80vh", overflowY: "auto", backgroundColor: "#ffffff", borderRadius: "8px", padding: "16px", boxSizing: "border-box", fontFamily: "Poppins, sans-serif", },
-  modalContentStylesQR: { backgroundColor: "#fff", borderRadius: "8px", padding: "16px", width: "320px", maxWidth: "90%", boxShadow: "0 4px 8px rgba(0,0,0,0.2)", },
-  buttonBase: { border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: 700, fontFamily: "Poppins", fontSize: "14px", padding: "8px 16px", },
-  btnGreyPD: { ...buttonBase, backgroundColor: "#ccc", color: "#000" },
-  btnGreen: { ...buttonBase, backgroundColor: "#16c76c", color: "#fff", marginBottom: "12px" },
-  fullscreenOverlay: { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.85)', zIndex: 10001, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(5px)' },
-  fullscreenImage: { maxWidth: '95%', maxHeight: '90%', display: 'block', objectFit: 'contain' },
-  fullscreenCloseButton: { position: 'absolute', top: '15px', right: '15px', background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer', borderRadius: '50%', width: '35px', height: '35px', display: 'flex', justifyContent: 'center', alignItems: 'center', lineHeight: '1' }
+  memberCard: {
+    width: "311px",
+    backgroundColor: "#f0fdf4",
+    border: "1px solid #bbf7d0",
+    borderRadius: "12px",
+    padding: "16px",
+    marginBottom: "16px",
+    color: "#166534",
+    fontFamily: "Poppins",
+    position: "relative",
+    margin: "0 auto",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+    transition: "all 0.2s ease"
+  },
+  memberHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontSize: "14px",
+    fontWeight: "600",
+    marginBottom: "8px",
+    color: "#166534"
+  },
+  deleteButton: {
+    backgroundColor: "rgba(255,45,85,0.1)",
+    border: "none",
+    color: "#ef4444",
+    fontWeight: "bold",
+    cursor: "pointer",
+    fontSize: "14px",
+    borderRadius: "50%",
+    width: "24px",
+    height: "24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease"
+  },
+  memberTextTitle: {
+    fontSize: "16px",
+    fontWeight: "bold",
+    marginBottom: "8px",
+    color: "#15803d"
+  },
+  memberText: {
+    fontSize: "14px",
+    marginBottom: "6px",
+    color: "#166534"
+  },
+  histCard: {
+    backgroundColor: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "10px",
+    padding: "12px 16px",
+    marginBottom: "10px", 
+    width: '100%', 
+    boxSizing: 'border-box',
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    transition: "all 0.2s ease"
+  },
+  histText: {
+    fontSize: "14px",
+    margin: 0,
+    color: "#334155",
+    lineHeight: "1.5",
+    fontWeight: 400
+  },
+  subtleText: {
+    fontSize: "12px",
+    color: "#64748b",
+    display: "inline-block",
+    marginRight: "5px",
+    fontWeight: 500
+  },
+  itemRowStyle: {
+    border: "1px solid #e2e8f0",
+    borderRadius: "10px",
+    padding: "16px",
+    marginBottom: "16px",
+    backgroundColor: "#fff",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    transition: "all 0.2s ease"
+  },
+  itemLabelStyle: {
+    display: "block",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    fontWeight: 600,
+    marginBottom: "6px",
+    color: "#334155"
+  },
+  itemInputBaseStyle: {
+    width: "100%",
+    padding: "10px 12px",
+    marginBottom: "12px",
+    borderRadius: "8px",
+    border: "1px solid #e2e8f0",
+    boxSizing: "border-box",
+    fontSize: "14px",
+    fontFamily: "Poppins",
+    outline: "none",
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  },
+  photoSectionStyle: {
+    marginTop: "16px",
+    paddingTop: "16px",
+    borderTop: "1px dashed #e2e8f0"
+  },
+  photoPreviewContainerStyle: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    minHeight: "50px",
+    marginBottom: "12px"
+  },
+  photoPreviewStyle: {
+    maxWidth: "80px",
+    maxHeight: "80px",
+    height: "auto",
+    borderRadius: "8px",
+    border: "1px solid #e2e8f0",
+    objectFit: "cover",
+    cursor: "pointer",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+  },
+  noPhotoDivStyle: {
+    width: "80px",
+    height: "80px",
+    backgroundColor: "#f1f5f9",
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#94a3b8",
+    fontSize: "12px",
+    textAlign: "center",
+    border: "1px dashed #cbd5e1"
+  },
+  photoButtonsContainerStyle: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    flexGrow: 1
+  },
+  fileInputHiddenStyle: {
+    display: "none"
+  },
+  fileInputLabelBaseStyle: {
+    display: "inline-block",
+    padding: "10px 12px",
+    color: "white",
+    borderRadius: "6px",
+    fontSize: "13px",
+    fontWeight: 600,
+    transition: "all 0.2s ease",
+    textAlign: "center",
+    border: "none",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+  },
+  photoActionButtonBaseStyle: {
+    padding: "8px 12px",
+    fontSize: "13px",
+    fontWeight: 500,
+    border: "none",
+    borderRadius: "6px",
+    transition: "all 0.2s ease",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+  },
+  photoStatusStyle: {
+    fontSize: "12px",
+    fontStyle: "italic",
+    marginTop: "6px",
+    color: "#64748b"
+  },
+  photoErrorStyle: {
+    fontSize: "12px",
+    fontStyle: "italic",
+    marginTop: "6px",
+    color: "#ef4444",
+    fontWeight: "bold"
+  },
+  modalOverlayStyles: { 
+    position: "fixed", 
+    top: 0, 
+    left: 0, 
+    width: "100vw", 
+    height: "100vh", 
+    backgroundColor: "rgba(0,0,0,0.6)", 
+    backdropFilter: "blur(3px)",
+    display: "flex", 
+    justifyContent: "center", 
+    alignItems: "center", 
+    zIndex: 9999 
+  },
+  modalContentStyles: { 
+    width: "90%", 
+    maxWidth: "380px", 
+    maxHeight: "80vh", 
+    overflowY: "auto", 
+    backgroundColor: "#ffffff", 
+    borderRadius: "12px", 
+    padding: "20px", 
+    boxSizing: "border-box", 
+    fontFamily: "Poppins",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+  },
+  modalContentStylesQR: { 
+    backgroundColor: "#fff", 
+    borderRadius: "12px", 
+    padding: "20px", 
+    width: "320px", 
+    maxWidth: "90%", 
+    boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+  },
+  buttonBase: { 
+    border: "none", 
+    borderRadius: "8px", 
+    cursor: "pointer", 
+    fontWeight: 600, 
+    fontFamily: "Poppins", 
+    fontSize: "14px", 
+    padding: "10px 16px",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+  },
+  btnGreyPD: { 
+    backgroundColor: "#f1f5f9", 
+    color: "#475569",
+    border: "none", 
+    borderRadius: "8px", 
+    cursor: "pointer", 
+    fontWeight: 600, 
+    fontFamily: "Poppins", 
+    fontSize: "14px", 
+    padding: "10px 16px",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+    width: "100%",
+    marginTop: "16px"
+  },
+  btnGreen: { 
+    backgroundColor: "#10b981", 
+    color: "#fff",
+    border: "none", 
+    borderRadius: "8px", 
+    cursor: "pointer", 
+    fontWeight: 600, 
+    fontFamily: "Poppins", 
+    fontSize: "14px", 
+    padding: "10px 16px",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 4px rgba(16, 185, 129, 0.3)",
+    marginBottom: "12px"
+  },
+  fullscreenOverlay: { 
+    position: 'fixed', 
+    top: 0, 
+    left: 0, 
+    width: '100vw', 
+    height: '100vh', 
+    backgroundColor: 'rgba(0, 0, 0, 0.85)', 
+    backdropFilter: "blur(5px)",
+    zIndex: 10001, 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center'
+  },
+  fullscreenImage: { 
+    maxWidth: '95%', 
+    maxHeight: '90%', 
+    display: 'block', 
+    objectFit: 'contain',
+    borderRadius: '4px',
+    boxShadow: '0 0 20px rgba(255,255,255,0.1)'
+  },
+  fullscreenCloseButton: { 
+    position: 'absolute', 
+    top: '15px', 
+    right: '15px', 
+    background: 'rgba(255,255,255,0.2)', 
+    border: 'none', 
+    color: 'white', 
+    fontSize: '24px', 
+    cursor: 'pointer', 
+    borderRadius: '50%', 
+    width: '35px', 
+    height: '35px', 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    lineHeight: '1',
+    transition: 'all 0.2s ease'
+  }
 };
 // --- Fin Estilos ---
 
