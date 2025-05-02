@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Screen from "../components/Screen"; // Asumiendo layout base
+import ChecklistModerno from "../components/ChecklistModerno"; // Importamos el componente ChecklistModerno
 
 import { API_URL } from '../utils/api'
 
@@ -52,6 +53,7 @@ const Home = () => {
     const [loadingStats, setLoadingStats] = useState(true);
     const [errorStats, setErrorStats] = useState("");
     const [token, setToken] = useState(localStorage.getItem("token"));
+    const [userData, setUserData] = useState(null);
 
     useEffect(() => {
         // Si no hay token, redirigir a login inmediatamente
@@ -59,6 +61,25 @@ const Home = () => {
             navigate('/login');
             return;
         }
+
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch(`${BASE_URL}/usuarios/me`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}`);
+                }
+                
+                const data = await response.json();
+                setUserData(data);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
 
         const fetchStats = async () => {
             setLoadingStats(true);
@@ -118,6 +139,7 @@ const Home = () => {
             }
         };
 
+        fetchUserData();
         fetchStats();
         // Refrescar cada 5 minutos, por ejemplo
         const intervalId = setInterval(fetchStats, 5 * 60 * 1000);
@@ -166,6 +188,9 @@ const Home = () => {
                     alertCount={stats.alert}
                     loading={loadingStats}
                 />
+                
+                {/* Componente Checklist */}
+                <ChecklistModerno username={userData?.username || 'Usuario'} />
             </div>
         </Screen>
     );
