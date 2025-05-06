@@ -1,0 +1,28 @@
+/* forceLight.css - Fuerza el modo claro en todos los dispositivos */
+
+/* Solo forzar el esquema de color claro sin afectar los colores personalizados */
+:root {
+  color-scheme: light !important;
+  forced-color-adjust: none !important;
+}
+
+/* Prevenir que el navegador aplique su propio tema oscuro */
+@media (prefers-color-scheme: dark) {
+  /* Solo forzar el esquema de color, no sobrescribir todos los colores */
+  :root {
+    color-scheme: light !important;
+    forced-color-adjust: none !important;
+  }
+  
+  /* Asegurar que los inputs y controles de formulario respeten el modo claro */
+  input[type="text"], 
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  select, 
+  textarea {
+    background-color: #ffffff;
+    color: inherit;
+  }
+}

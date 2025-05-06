@@ -5,9 +5,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424; /* Fondo oscuro por defecto */
+  color-scheme: light;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -45,7 +45,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a; /* Fondo botón oscuro */
+  background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -64,25 +64,10 @@ button:focus-visible {
 }
 /* --- >>> FIN: Keyframes para el Spinner <<< --- */
 
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547; /* Texto oscuro en tema claro */
-    background-color: #ffffff; /* Fondo blanco en tema claro */
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9; /* Fondo botón claro */
-  }
-}
-
 /* Forzamos fondo blanco base en html y body para tema claro */
-/* (Aunque :root ya lo haga, esto asegura consistencia) */
 html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden; /* Prevenir scroll horizontal */
-  background-color: #ffffff; /* Fondo base blanco */
+  background-color: #ffffff;
 }
